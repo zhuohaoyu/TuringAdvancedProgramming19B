@@ -1,0 +1,8 @@
+digraph {
+
+Inst0x7fffeea6c838[align = left, shape = box, label = "  %2 = call i32 (...) @read2()"];
+Inst0x7fffeea6dab0[align = left, shape = box, label = "  call void @foo(i32 %3)"];
+
+Inst0x7fffeea6c838 -> Inst0x7fffeea6dab0 [dir=back];
+
+}

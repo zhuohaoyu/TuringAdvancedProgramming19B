@@ -1,0 +1,33 @@
+digraph {
+
+Inst0x7fffee9f46a8[align = left, shape = box, label = "  %4 = call i32 (...) @read2()"];
+Inst0x7fffeea6c4c8[align = left, shape = box, label = "  %3 = call i32 (...) @read1()"];
+Inst0x7fffeea6c7d0[align = left, shape = box, label = "  store i32 %3, i32* %1, align 4"];
+Inst0x7fffeea6ca60[align = left, shape = box, label = "  store i32 %4, i32* %1, align 4"];
+Inst0x7fffeea6cd00[align = left, shape = box, label = "  %6 = call i32 @is_valid(i32 %5)"];
+Inst0x7fffeea6cd78[align = left, shape = box, label = "  %5 = load i32, i32* %1, align 4"];
+Inst0x7fffeea6cdf0[align = left, shape = box, label = "  store i32 %6, i32* %2, align 4"];
+Inst0x7fffeea6cf48[align = left, shape = box, label = "  %7 = load i32, i32* %2, align 4"];
+Inst0x7fffeea6cfc0[align = left, shape = box, label = "  %8 = icmp ne i32 %7, 0"];
+Inst0x7fffeea6d058[align = left, shape = box, label = "  br i1 %8, label %9, label %11"];
+Inst0x7fffeea6d2d0[align = left, shape = box, label = "  call void @foo(i32 %10)"];
+Inst0x7fffeea6d348[align = left, shape = box, label = "  %10 = load i32, i32* %1, align 4"];
+Inst0x7fffeea6d550[align = left, shape = box, label = "  call void @bar(i32 %12)"];
+Inst0x7fffeea6d5c8[align = left, shape = box, label = "  %12 = load i32, i32* %1, align 4"];
+
+Inst0x7fffee9f46a8 -> Inst0x7fffeea6ca60 [dir=back];
+Inst0x7fffeea6c4c8 -> Inst0x7fffeea6c7d0 [dir=back];
+Inst0x7fffeea6ca60 -> Inst0x7fffeea6cd78 [dir=back];
+Inst0x7fffeea6ca60 -> Inst0x7fffeea6d348 [dir=back];
+Inst0x7fffeea6ca60 -> Inst0x7fffeea6d5c8 [dir=back];
+Inst0x7fffeea6cd00 -> Inst0x7fffeea6cdf0 [dir=back];
+Inst0x7fffeea6cd78 -> Inst0x7fffeea6cd00 [dir=back];
+Inst0x7fffeea6cdf0 -> Inst0x7fffeea6cf48 [dir=back];
+Inst0x7fffeea6cf48 -> Inst0x7fffeea6cfc0 [dir=back];
+Inst0x7fffeea6cfc0 -> Inst0x7fffeea6d058 [dir=back];
+Inst0x7fffeea6d348 -> Inst0x7fffeea6d2d0 [dir=back];
+Inst0x7fffeea6d5c8 -> Inst0x7fffeea6d550 [dir=back];
+
+Inst0x7fffeea6d2d0 -> Inst0x7fffeea6cd00 [dir=none, color=red, style=dashed];
+Inst0x7fffeea6d550 -> Inst0x7fffeea6cd00 [dir=none, color=red, style=dashed];
+}

@@ -1,0 +1,12 @@
+digraph {
+
+Inst0x7fffeea69f20[align = left, shape = box, label = "  store i32 %2, i32* %1, align 4"];
+Inst0x7fffeea6c838[align = left, shape = box, label = "  %2 = call i32 (...) @read2()"];
+Inst0x7fffeea6d688[align = left, shape = box, label = "  %3 = load i32, i32* %1, align 4"];
+Inst0x7fffeea6dab0[align = left, shape = box, label = "  call void @foo(i32 %3)"];
+
+Inst0x7fffeea69f20 -> Inst0x7fffeea6d688 [dir=back];
+Inst0x7fffeea6c838 -> Inst0x7fffeea69f20 [dir=back];
+Inst0x7fffeea6d688 -> Inst0x7fffeea6dab0 [dir=back];
+
+}

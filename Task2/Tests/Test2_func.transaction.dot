@@ -1,0 +1,16 @@
+digraph {
+
+T19 [align = center, shape = box, label = "19"];
+T380 [align = center, shape = box, label = "380"];
+T7239 [align = center, shape = box, label = "7239"];
+T137560 [align = center, shape = box, label = "137560"];
+T2613659 [align = center, shape = box, label = "2613659"];
+
+T19 -> T7239 [dir = back];
+T19 -> T137560 [dir = back];
+T19 -> T2613659 [dir = back];
+
+T7239 -> T137560 [dir = none, style = dashed, color = red];
+T7239 -> T2613659 [dir = none, style = dashed, color = red];
+}
+

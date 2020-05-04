@@ -1,0 +1,15 @@
+digraph {
+
+Inst0x7fffee9f46a8[align = left, shape = box, label = "  %4 = call i32 (...) @read2()"];
+Inst0x7fffeea6c4c8[align = left, shape = box, label = "  %3 = call i32 (...) @read1()"];
+Inst0x7fffeea6cd00[align = left, shape = box, label = "  %6 = call i32 @is_valid(i32 %5)"];
+Inst0x7fffeea6d2d0[align = left, shape = box, label = "  call void @foo(i32 %10)"];
+Inst0x7fffeea6d550[align = left, shape = box, label = "  call void @bar(i32 %12)"];
+
+Inst0x7fffee9f46a8 -> Inst0x7fffeea6d550 [dir=back];
+Inst0x7fffee9f46a8 -> Inst0x7fffeea6d2d0 [dir=back];
+Inst0x7fffee9f46a8 -> Inst0x7fffeea6cd00 [dir=back];
+
+Inst0x7fffeea6d2d0 -> Inst0x7fffeea6cd00 [dir=none, color=red, style=dashed];
+Inst0x7fffeea6d550 -> Inst0x7fffeea6cd00 [dir=none, color=red, style=dashed];
+}
