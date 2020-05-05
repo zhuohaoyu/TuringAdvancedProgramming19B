@@ -54,6 +54,48 @@ vector<SDDGNode *>& SDDGNode::getSuccessors() {
     return mSuccessors;
 }
 
+string normalizeInstruction(Instruction *inst) {
+    string normalizedStr;
+    raw_string_ostream rso(normalizedStr);
+    if (isa<ReturnInst>(inst)) {
+        rso << "return ";
+        Type *rType = inst->getType();
+        rType->print(rso);
+    }
+    else {
+        CallInst *cinst = cast<CallInst>(inst);
+        Function *cfunc = cinst->getCalledFunction();
+        FunctionType *ftype = cinst->getFunctionType();
+        Type *rtype = ftype->getReturnType();
+        if (!rtype->isVoidTy()) {
+            ftype->getReturnType()->print(rso);
+            rso << " = ";
+        }
+        if (cfunc->hasName()) {
+            rso << cfunc->getName();
+        }
+        rso << "(";
+        for (auto iter = ftype->param_begin(); iter != ftype->param_end(); iter++) {
+            if (iter != ftype->param_begin()) {
+                rso << ", ";
+            }
+            Type *ptype = *iter;ptype->print(rso);
+        }
+        if (ftype->isVarArg()) {
+            if (ftype->getNumParams())rso << ", ";rso << "...";
+        }
+        rso << ")";
+    }
+    rso.flush();
+    return normalizedStr;
+}
+
+unsigned int BKDRHash(string s, unsigned int seed = 13131) {
+    unsigned int ret = 0;
+    for(auto i : s) 
+        ret = ret * seed + i;
+    return ret & 0x7fffffff;
+}
 
 
 namespace
@@ -126,6 +168,75 @@ void dotifyToFile(map<Instruction *, SDDGNode *> &nodes, set<pair<Instruction *,
     fos << "}" << endl;
     fos.close();
 }
+void dotifyHashedToFile(map<Instruction *, SDDGNode *> &nodes, set<pair<Instruction *, Instruction *>> &shares, string &file, bool showShareRelations)
+{
+    ofstream fos;
+    fos.open(file);
+    fos << "digraph {\n"
+        << endl;
+    for (auto iter = nodes.begin(); iter != nodes.end(); iter++)
+    {
+        Instruction *inst = iter->first;
+        fos << "Inst" << (void *)inst << "[align = left, shape = box, label = \"";
+        // string label;
+        // raw_string_ostream rso(label);
+        // inst->print(rso);
+        // string::size_type pos(0);
+        // while ((pos = label.find('"', pos)) != string::npos)
+        // {
+            // label.replace(pos, 1, "'");
+        // }
+        fos << BKDRHash(normalizeInstruction(inst)) << "\"];" << endl;
+        // fos << label << "\"];" << endl;
+    }
+    fos << endl;
+    for (auto iter = nodes.begin(); iter != nodes.end(); iter++)
+    {
+        Instruction *src = iter->first;
+        SDDGNode *node = iter->second;
+        vector<SDDGNode *> successors = node->getSuccessors();
+        for (SDDGNode *succ : successors)
+        {
+            Instruction *dst = succ->getInst();
+            fos << "Inst" << (void *)src << " -> Inst" << (void *)dst << " [dir=back];" << endl;
+        }
+    }
+    fos << endl;
+    if (showShareRelations || nodes.empty())
+    {
+        if (nodes.empty())
+        {
+            for (pair<Instruction *, Instruction *> pp : shares)
+            {
+                Instruction *inst1[2] = {pp.first, pp.second};
+                Instruction *inst;
+                for (int idx = 0; idx < 2; idx++)
+                {
+                    inst = inst1[idx];
+                    fos << "Inst" << (void *)inst << "[align = left, shape = box, label = \"";
+                    // string label;
+                    // raw_string_ostream rso(label);
+                    // inst->print(rso);
+                    // string::size_type pos(0);
+                    // while ((pos = label.find('"', pos)) != string::npos)
+                    // {
+                        // label.replace(pos, 1, "'");
+                    // }
+                    fos << BKDRHash(normalizeInstruction(inst)) << "\"];" << endl;
+                }
+            }
+            fos << endl;
+        }
+        for (pair<Instruction *, Instruction *> pp : shares)
+        {
+            Instruction *inst1 = pp.first;
+            Instruction *inst2 = pp.second;
+            fos << "Inst" << (void *)inst1 << " -> Inst" << (void *)inst2 << " [dir=none, color=red, style=dashed];" << endl;
+        }
+    }
+    fos << "}" << endl;
+    fos.close();
+}
 } // namespace
 
 void SDDG::dotify(bool showShareRelations)
@@ -137,6 +248,11 @@ void SDDG::dotify(bool showShareRelations)
         file = mFunc->getName().str() + ".flat.dot";
         dotifyToFile(mInterestingNodes, mShares, file, showShareRelations);
     }
+}
+void SDDG::dotifyHashed(bool showShareRelations)
+{
+    std::string file = mFunc->getName().str() + ".transaction.dot";
+    dotifyHashedToFile(mInterestingNodes, mShares, file, showShareRelations);
 }
 
 namespace dfa
@@ -903,5 +1019,10 @@ void SDDG::flattenSDDG() {
         }
     }
 }
+
+void SDDG::hashSDDG() {
+
+}
+
 
 } // namespace miner

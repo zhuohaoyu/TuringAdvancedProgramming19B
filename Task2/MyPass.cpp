@@ -33,6 +33,7 @@ public:
         sddg.buildSDDG();
         sddg.flattenSDDG();
         sddg.dotify();
+        sddg.dotifyHashed();
     }
 
     virtual bool runOnModule(Module &M) {
