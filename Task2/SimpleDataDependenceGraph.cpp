@@ -4,6 +4,7 @@
 #include <queue>
 #include <utility>
 #include <vector>
+#include <string>
 #include "llvm/IR/CFG.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Module.h"
@@ -21,6 +22,7 @@ using std::ofstream;
 using std::pair;
 using std::stack;
 using std::queue;
+using std::string;
 
 // TRUE for successful insertion; FALSE indicates an existing pair.
 bool SDDG::share(Instruction *fst, Instruction *snd)
@@ -466,6 +468,7 @@ void SDDG::buildSDDG()
                 }
                 unsigned int nOprands = curInst->getNumOperands() ;
                 --nOprands ;//最后一个返回的operand是函数定义，不要
+                if( !curInst->use_empty() && !nOprands ) continue ;
                 for( int idx = 0 ; idx < nOprands ; idx ++ ){
                     Value *op = curInst->getOperand( idx ) ;
                     if( !bbDef->getDef( op ) ){
@@ -489,7 +492,7 @@ void SDDG::buildSDDG()
                         mNodes[ bbDef->getDef( op ) ]->addSuccessor( mNodes[curInst] ) ;
                     }
                 }
-            } else if ( curInstOpcode == Instruction::Br ){
+            } /*else if ( curInstOpcode == Instruction::Br ){
                 int nOprands = curInst->getNumOperands() ;
                 if( nOprands <= 1 ) continue ;
                 mNodes[curInst] = new SDDGNode( curInst ) ;
@@ -503,7 +506,7 @@ void SDDG::buildSDDG()
                         mNodes[ bbDef->getDef( op ) ]->addSuccessor( mNodes[curInst] ) ;
                     }
                 }
-            } 
+            } */
             else {
                 if( !curInst->use_empty() ) {//被使用过，是一个定义
                     Value *lvalue = dyn_cast<Value>(curInst) ;
@@ -519,7 +522,7 @@ void SDDG::buildSDDG()
                 mNodes[curInst] = new SDDGNode( curInst ) ;
                 for( int idx = 0 ; idx < nOprands ; idx ++ ) {
                     Value *op = curInst->getOperand( idx ) ;
-                    if ( !isa<Argument>(op) && !isa<Instruction>(op) )
+                    if( !isa<Argument>(op) && !isa<Instruction>(op) ) continue ;
                     if( !bbDef->getDef( op ) ) {
                         bbUse->createUse( op , curInst ) ;
                     } else { // 能够直接获取块内定义，加边
@@ -564,7 +567,6 @@ void SDDG::buildSDDG()
         
         while(!bbQueue.empty()) {
             BasicBlock *curBB = bbQueue.front();
-        //    errs() << (void*)curBB  << " " << curBB->empty() << '\n';
             bbQueueVisit.insert(curBB);
             bbQueue.pop();
             if(curBB != (&(mFunc->getEntryBlock()))) {
@@ -581,21 +583,15 @@ void SDDG::buildSDDG()
                     }
                     changed |= dfa::mergeTwoMaps( *bbOut[curBB] , tmpOut );
                 }
-                //
                 changed |= dfa::mergeTwoMaps(*bbOut[curBB], *bbGen[curBB]);
-                //
             }
-            // wys code 
-            //bbIn[curBB];
             
             auto termInst = curBB->getTerminator();
             int numSuccessor = termInst->getNumSuccessors();
-            // errs() << "Fuckoys " << numSuccessor << "\n";
             for(int idxn = 0; idxn < numSuccessor; ++idxn) {
                 BasicBlock *nextBB = termInst->getSuccessor(idxn);
                 if(!bbQueueVisit.count(nextBB) && !nextBB->empty())
                     bbQueue.push(nextBB); 
-                    
             }
         }
     }
@@ -638,7 +634,6 @@ void SDDG::buildSDDG()
         for (auto instIter = bb.begin(); instIter != bb.end(); instIter++)
         {
             Instruction *inst = dyn_cast<Instruction>(instIter);
-            // errs() << "Analyze Inst: " << *inst << "  **#OP: " << inst->getNumOperands() << "\n";
             if (Instruction::Alloca == inst->getOpcode())
             {
                 continue;
@@ -663,6 +658,14 @@ void SDDG::buildSDDG()
                 ////////////////////////////
                 // 此处未考虑Intrinsic函数的处理，请自行添加。
                 ////////////////////////////
+                if(Instruction::Call == inst->getOpcode()) { // Ignoring Intrinistic Functions(except memcpy)
+                    string instString;
+                    raw_string_ostream iso(instString);
+                    iso << (*inst);
+                    if(instString.find("llvm.") != string::npos && instString.find("memcpy") ==  string::npos) 
+                        continue;
+                }
+
                 if (Instruction::Call == inst->getOpcode() && !inst->getType()->isVoidTy())
                 {
                     bbSDef->shareDefine(inst, inst);
@@ -729,9 +732,6 @@ void SDDG::buildSDDG()
                 }
             }
         }
-        // errs() << "\n#### BB" << &bb << "\n";
-        // bbSDef->dump();
-        // bbSUse->dump();
     }
     // 2. iteratively compute IN/OUT for ShareDef and ShareUse
     changed = true;
@@ -882,10 +882,10 @@ void SDDG::flattenSDDG() {
         while(!Q.empty()) Q.pop();
         vis.clear();
         Q.push(tmp.second);
-        errs() << tmp.second << "\n";
+        // errs() << tmp.second << "\n";
         while(!Q.empty()) { // BFS
             SDDGNode* u = Q.front();
-            errs() <<"\t" << u << "\n";
+            // errs() <<"\t" << u << "\n";
             Q.pop();
             vis.insert(u);
             if(u != tmp.second)
@@ -893,7 +893,8 @@ void SDDG::flattenSDDG() {
                 // 如果可行，addedge(Source, u)
                 mInterestingNodes[tmp.first] -> addSuccessor(mInterestingNodes[u -> getInst()]); 
                 mInterestingNodes[u -> getInst()] -> addPredecessor(mInterestingNodes[tmp.first]);
-                errs() << "New EDGE!!!!\n";
+                // errs() << "New EDGE!!!!\n";
+                continue ;
             }
             vector <SDDGNode*> V = u -> getSuccessors();
             for(auto v: V) {

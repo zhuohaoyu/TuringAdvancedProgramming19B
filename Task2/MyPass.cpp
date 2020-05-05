@@ -24,9 +24,9 @@ public:
     MyPass() : ModulePass(ID) {}
 
     void getFunctionGraph(Function &F) {
-        errs() << "  Function:" << F.getName() << '\n';
+        errs() << " + Function:" << F.getName() << '\n';
         if(F.empty()) {
-            errs() << "Empty Function\n";
+            errs() << "   - Empty Function\n";
             return;
         }
         miner::SDDG sddg(&F);
