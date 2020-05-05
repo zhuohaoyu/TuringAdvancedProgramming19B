@@ -3,6 +3,8 @@
 #include <stack>
 #include <queue>
 #include <utility>
+#include <vector>
+#include "llvm/IR/CFG.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/ModuleSlotTracker.h"
@@ -32,6 +34,22 @@ bool SDDG::share(Instruction *fst, Instruction *snd)
     }
     return false;
 }
+
+
+bool SDDGNode::addSuccessor(SDDGNode *dst) {
+    mSuccessors.push_back(dst);
+}
+bool SDDGNode::addPredecessor(SDDGNode *dst) {
+    mPredecessors.push_back(dst);
+}
+
+inline Instruction* SDDGNode::getInst() {
+    return mInst;
+}
+vector<SDDGNode *>& SDDGNode::getSuccessors() {
+    return mSuccessors;
+}
+
 
 
 namespace
@@ -376,6 +394,19 @@ bool mergeTwoMaps(map<Value *, set<TSE *> *> &to, map<Value *, set<TSE *> *> &fr
     //////////////////////////////
     return changed;
 }
+
+template<class T>
+bool mergeTwoSet(set<T> *from, set<T> *to) {
+    bool changed = false;
+    for(auto it : (*from)) {
+        if(!to->count(it)) {
+            changed = true;
+            to->insert(it);
+        }
+    }
+    return changed;
+}
+
 } // namespace dfa
 
 void SDDG::buildSDDG()
@@ -407,10 +438,15 @@ void SDDG::buildSDDG()
                 continue ;
             }
             else if(curInstOpcode == Instruction::Store) { //store src dest
+                mNodes[curInst] = new SDDGNode( curInst ) ;
+
                 Value *fstOp = curInst->getOperand( 0 ) ;
                 Value *sndOp = curInst->getOperand( 1 ) ;
                 if( !bbDef->getDef( fstOp ) ){
                     bbUse->createUse( fstOp , curInst ) ;
+                } else { // 能够直接获取块内定义，加边
+                    mNodes[curInst]->addPredecessor( mNodes[bbDef->getDef( fstOp )] ) ;
+                    mNodes[ bbDef->getDef( fstOp ) ]->addSuccessor( mNodes[curInst] ) ;
                 }
                 bbDef->define( sndOp , curInst ) ;
             }
@@ -425,6 +461,9 @@ void SDDG::buildSDDG()
                     Value *op = curInst->getOperand( idx ) ;
                     if( !bbDef->getDef( op ) ){
                         bbUse->createUse( op , curInst ) ;
+                    } else { // 能够直接获取块内定义，加边
+                        mNodes[curInst]->addPredecessor( bbDef->getDef( op ) ) ;
+                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( curInst ) ;
                     }
                 }
             } else if(curInstOpcode == Instruction::Br || curInstOpcode == Instruction::Ret ) {
@@ -433,8 +472,10 @@ void SDDG::buildSDDG()
                     Value *op = curInst->getOperand( idx ) ;
                     if( !bbDef->getDef( op ) ){
                         bbUse->createUse( op , curInst ) ;
+                    } else { // 能够直接获取块内定义，加边
+                        mNodes[curInst]->addPredecessor( bbDef->getDef( op ) ) ;
+                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( curInst ) ;
                     }
-                }
             } else {
                 if( !curInst->use_empty() ){//被使用过，是一个定义
                     Value *lvalue = dyn_cast<Value>(curInst) ;
@@ -445,7 +486,7 @@ void SDDG::buildSDDG()
     }
 
     for(auto bbIter = mFunc -> begin(); bbIter != mFunc -> end(); bbIter++) {
-        BasicBlock &bb = *bbIter;        
+        BasicBlock &bb = *bbIter;
         dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb) ; // bbDef = sDfaDefs[&bb]
         dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb) ;
         for( auto defIter : bbDef->getDef() ) bbGen[&bb] -> insert( defIter.second ) ;
@@ -454,18 +495,32 @@ void SDDG::buildSDDG()
 
     queue<BasicBlock *> bbQueue;
     set<BasicBlock *> bbQueueVisit;
+    set< Instruction* >* tmpIn, tmpOut ; //?
     bool changed = 1;
     while(changed == 1) {
         while(!bbQueue.empty()) bbQueue.pop();
         bbQueueVisit.clear();
         bbQueue.push(&(mFunc->getEntryBlock()));
+        //start BFS
         while(!bbQueue.empty()) {
             BasicBlock *curBB = bbQueue.front();
             bbQueueVisit.insert(curBB);
             bbQueue.pop();
-            for( )
             
-            //
+            
+            //tmpIn.clear() ; //?
+            for( auto preBBit = pred_begin(curBB) , endBBit = pred_end(curBB) ; preBBit != endBBit ; ++preBBit ){
+                BasicBlock* preBB = *preBBit;
+                dfa::mergeTwoSet(bbOut[preBB], bbIn[curBB]);
+                tmpOut = bbOut[preBB];
+                for(auto tmpDef: sDfaDefs[preBB] -> getDef()) {
+                    
+
+                }
+            }            
+            // wys code ^
+
+            //bbIn[curBB];
             
             for(auto it = curBB->begin(); it != curBB->end(); ++it) {
                 Instruction *curInst = dyn_cast<Instruction>(it);
