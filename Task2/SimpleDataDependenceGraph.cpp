@@ -192,6 +192,9 @@ public:
         }
         mUse.clear();
     }
+    map<Value *, set<Instruction *> *>& getmUse() {
+        return mUse;
+    }
     void createUse(Value *val, Instruction *inst) {
         if(!mUse.count(val)) {
             mUse[val] = new set<Instruction*>;
@@ -413,7 +416,7 @@ void SDDG::buildSDDG()
 {
     map<BasicBlock *, dfa::Definition *> sDfaDefs;
     map<BasicBlock *, dfa::Use *> sDfaUses;
-    map<BasicBlock *, set<Instruction *> *> bbGen, bbKill, bbIn, bbOut;
+    map<BasicBlock *, map<Value*, set<Instruction*>* >* > bbGen, bbIn, bbOut;
     ////////////////////////////
     // 在这里实现构建数据依赖关系的代码，可按照如下基本步骤进行：
     // 1. 初始化每个基本块的gen和kill、definition和use，并建立基本块内部的数据依赖关系
@@ -424,10 +427,9 @@ void SDDG::buildSDDG()
     //1. scan for initializing Def of each BB
     for(auto bbIter = mFunc -> begin(); bbIter != mFunc -> end(); bbIter++) {
         BasicBlock &bb = *bbIter;
-        bbGen[&bb] = new set<Instruction *>;
-        bbKill[&bb] = new set<Instruction *>;
-        bbIn[&bb] = new set<Instruction *>;
-        bbOut[&bb] = new set<Instruction *>;
+        bbGen[&bb] = new map<Value*, set<Instruction*>* > ;
+        bbIn[&bb] = new map<Value*, set<Instruction* >* >;
+        bbOut[&bb] = new map<Value*, set<Instruction* >* > ;
         dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb) ; // bbDef = sDfaDefs[&bb]
         dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb) ;
         for(auto instIter = bb.begin() ; instIter != bb.end() ; instIter++ ) {
@@ -437,9 +439,8 @@ void SDDG::buildSDDG()
             if(curInstOpcode == Instruction::Alloca) {
                 continue ;
             }
-            else if(curInstOpcode == Instruction::Store) { //store src dest
-                mNodes[curInst] = new SDDGNode( curInst ) ;
-
+            mNodes[curInst] = new SDDGNode( curInst ) ;
+            if(curInstOpcode == Instruction::Store) { //store src dest
                 Value *fstOp = curInst->getOperand( 0 ) ;
                 Value *sndOp = curInst->getOperand( 1 ) ;
                 if( !bbDef->getDef( fstOp ) ){
@@ -451,6 +452,7 @@ void SDDG::buildSDDG()
                 bbDef->define( sndOp , curInst ) ;
             }
             else if(curInstOpcode == Instruction::Call ) {
+                mInterestingNodes[ curInst ] = new SDDGNode( curInst ) ;
                 if( !curInst->use_empty() ){ // 被用过，是定义，是call
                     Value *lvalue = dyn_cast<Value>(curInst) ;
                     bbDef->define( lvalue , curInst ) ;
@@ -467,6 +469,9 @@ void SDDG::buildSDDG()
                     }
                 }
             } else if(curInstOpcode == Instruction::Br || curInstOpcode == Instruction::Ret ) {
+                if( curInstOpcode == Instruction::Ret ){
+                    mInterestingNodes[ curInst ] = new SDDGNode( curInst ) ;
+                }
                 int nOprands = curInst->getNumOperands() ;
                 for( int idx = 0 ; idx < nOprands ; idx ++ ) {
                     Value *op = curInst->getOperand( idx ) ;
@@ -481,6 +486,15 @@ void SDDG::buildSDDG()
                 if( !curInst->use_empty() ) {//被使用过，是一个定义
                     Value *lvalue = dyn_cast<Value>(curInst) ;
                     bbDef->define( lvalue , curInst ) ;
+                } int nOprands = curInst->getNumOperands() ;
+                for( int idx = 0 ; idx < nOprands ; idx ++ ) {
+                    Value *op = curInst->getOperand( idx ) ;
+                    if( !bbDef->getDef( op ) ) {
+                        bbUse->createUse( op , curInst ) ;
+                    } else { // 能够直接获取块内定义，加边
+                        mNodes[curInst]->addPredecessor( mNodes[bbDef->getDef( op )] ) ;
+                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( mNodes[curInst] ) ;
+                    }
                 }
             }
         }
@@ -490,13 +504,13 @@ void SDDG::buildSDDG()
         BasicBlock &bb = *bbIter;
         dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb) ; // bbDef = sDfaDefs[&bb]
         dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb) ;
-        for( auto defIter : bbDef->getDef() ) bbGen[&bb] -> insert( defIter.second ) ;
-        bbOut = bbGen ;
+        for( auto defIter : bbDef->getDef() ) (*bbGen[&bb])[defIter.first]-> insert( defIter.second ) ; // map<BasicBlock *, map<Value*, set<Instruction*>* >* >
+        bbOut[&bb] = bbGen[&bb] ;
     }
 
     queue<BasicBlock *> bbQueue;
     set<BasicBlock *> bbQueueVisit;
-    set< Instruction* > tmpIn ; //?
+    map< Value* , Instruction* > tmpIn ;
     bool changed = 1;
     while(changed == 1) {
         while(!bbQueue.empty()) bbQueue.pop();
@@ -510,14 +524,16 @@ void SDDG::buildSDDG()
             
             for( auto preBBit = pred_begin(curBB) , endBBit = pred_end(curBB) ; preBBit != endBBit ; ++preBBit ){
                 BasicBlock* preBB = *preBBit;
-                dfa::mergeTwoSet(bbOut[preBB], bbIn[curBB]);
-                set< Instruction* > tmpOut(*bbOut[preBB]);
-                for(auto tmpDef: sDfaDefs[preBB] -> getDef()) {
-                    if(sDfaDefs[curBB] -> getDef(tmpDef.first) != nullptr) {
-                        tmpOut.erase(tmpDef.second);
+                dfa::mergeTwoMaps( *bbIn[curBB] , *bbOut[preBB]);// 合并前驱的Out到当前的In
+                map< Value* , set<Instruction*>* > tmpOut( *(bbOut[preBB]) );
+                //检查Out(pre)的所有 Instruction 是否被重定义
+                for(auto tmpDef: *bbOut[preBB] ){ // 寻找是否被重定义，如果有，则被kill
+                    Value *lvalue = tmpDef.first ;
+                    if(sDfaDefs[curBB] -> getDef( lvalue ) != nullptr) {
+                        tmpOut.erase( tmpDef.first );
                     }
                 }
-                changed |= dfa::mergeTwoSet(&tmpOut, bbOut[curBB]);
+                changed |= dfa::mergeTwoMaps( *bbOut[curBB] , tmpOut);
             }                
             // wys code ^
 
@@ -530,6 +546,19 @@ void SDDG::buildSDDG()
                 if(!bbQueueVisit.count(nextBB)) 
                     bbQueue.push(nextBB);
             }
+        }
+    }
+
+    for( auto bbIter = mFunc -> begin() ; bbIter != mFunc->end() ; bbIter++ ){
+        BasicBlock *bb = dyn_cast<BasicBlock>(bbIter);
+        auto curUse = dfa::findOrCreate(sDfaUses, bb)->getmUse() ;// map& : value* to set<inst*>*
+        auto curIn = bbIn[bb] ; // set of in Inst
+        for( auto valUse : curUse ){ // get every  val-set pair
+            
+            for( auto useInst : ( *valUse.second ) ){ // get Inst
+                
+            }
+            
         }
     }
     // 以下是创建数据共享关系的代码，其中有一处需要同学们自行处理，所依赖的mergeTwoMaps函数需要
@@ -787,7 +816,32 @@ void SDDG::buildSDDG()
         delete bbIn[curBB];
         delete bbOut[curBB];
         delete bbGen[curBB];
-        delete bbKill[curBB];
+    }
+}
+
+void SDDG::flattenSDDG() {
+    queue <SDDGNode*> Q;
+    set <SDDGNode*> vis;
+    for(auto tmp: mNodes) { // tmp: 遍历 mNodes 中的所有 ret 和 call
+        if(tmp.first -> getOpcode() != Instruction::Call && tmp.first -> getOpcode() != Instruction::Ret) continue;
+        while(!Q.empty()) Q.pop();
+        vis.clear();
+        Q.push(tmp.second);
+        while(!Q.empty()) { // BFS
+            SDDGNode* u = Q.front();
+            Q.pop();
+            vis.insert(u);
+            if(u -> getInst() -> getOpcode() == Instruction::Call || u -> getInst() -> getOpcode() == Instruction::Ret) {
+                // 如果可行，addedge(Source, u)
+                mInterestingNodes[tmp.first] -> addSuccessor(mInterestingNodes[u -> getInst()]); 
+                mInterestingNodes[u -> getInst()] -> addPredecessor(mInterestingNodes[tmp.first]); 
+                continue;
+            }
+            vector <SDDGNode*> V = u -> getSuccessors();
+            for(auto v: V) {
+                if(vis.find(v) != vis.end()) Q.push(v);
+            }
+        }
     }
 }
 
