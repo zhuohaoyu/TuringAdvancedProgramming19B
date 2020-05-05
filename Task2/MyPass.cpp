@@ -25,10 +25,14 @@ public:
 
     void getFunctionGraph(Function &F) {
         errs() << "  Function:" << F.getName() << '\n';
+        if(F.empty()) {
+            errs() << "Empty Function\n";
+            return;
+        }
         miner::SDDG sddg(&F);
-        //sddg.buildSDDG();
-        //sddg.flattenSDDG();
-        // sddg.dotify();
+        sddg.buildSDDG();
+        sddg.flattenSDDG();
+        sddg.dotify();
     }
 
     virtual bool runOnModule(Module &M) {
