@@ -462,8 +462,8 @@ void SDDG::buildSDDG()
                     if( !bbDef->getDef( op ) ){
                         bbUse->createUse( op , curInst ) ;
                     } else { // 能够直接获取块内定义，加边
-                        mNodes[curInst]->addPredecessor( bbDef->getDef( op ) ) ;
-                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( curInst ) ;
+                        mNodes[curInst]->addPredecessor( mNodes[bbDef->getDef( op )] ) ;
+                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( mNodes[curInst] ) ;
                     }
                 }
             } else if(curInstOpcode == Instruction::Br || curInstOpcode == Instruction::Ret ) {
@@ -473,8 +473,8 @@ void SDDG::buildSDDG()
                     if( !bbDef->getDef( op ) ) {
                         bbUse->createUse( op , curInst ) ;
                     } else { // 能够直接获取块内定义，加边
-                        mNodes[curInst]->addPredecessor( bbDef->getDef( op ) ) ;
-                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( curInst ) ;
+                        mNodes[curInst]->addPredecessor( mNodes[bbDef->getDef( op )] ) ;
+                        mNodes[ bbDef->getDef( op ) ]->addSuccessor( mNodes[curInst] ) ;
                     }
                 }
             } else {
