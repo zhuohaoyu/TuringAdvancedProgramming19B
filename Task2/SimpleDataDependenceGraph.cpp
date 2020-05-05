@@ -1,6 +1,7 @@
 #include <fstream>
 #include <list>
 #include <stack>
+#include <queue>
 #include <utility>
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Module.h"
@@ -17,7 +18,7 @@ using std::list;
 using std::ofstream;
 using std::pair;
 using std::stack;
-
+using std::queue;
 
 // TRUE for successful insertion; FALSE indicates an existing pair.
 bool SDDG::share(Instruction *fst, Instruction *snd)
@@ -171,7 +172,7 @@ public:
             if(i != nullptr) 
                 delete i;
         }
-
+        mUse.clear();
     }
     void createUse(Value *val, Instruction *inst) {
         if(!mUse.count(val)) {
@@ -383,12 +384,53 @@ bool mergeTwoMaps(map<Value *, set<TSE *> *> &to, map<Value *, set<TSE *> *> &fr
 void SDDG::buildSDDG()
 {
     map<BasicBlock *, dfa::Definition *> sDfaDefs;
+    map<BasicBlock *, dfa::Use *> sDfaUses;
+    map<BasicBlock *, set<Instruction *> *> bbGen, bbKill, bbIn, bbOut;
     ////////////////////////////
     // 在这里实现构建数据依赖关系的代码，可按照如下基本步骤进行：
     // 1. 初始化每个基本块的gen和kill、definition和use，并建立基本块内部的数据依赖关系
     // 2. 根据迭代数据流算法，计算IN和OUT
     // 3. 根据每个基本块的IN和use信息，更新数据依赖图
     ////////////////////////////
+    queue<BasicBlock *> bbQueue;
+    set<BasicBlock *> bbQueueVisit;
+    bbQueue.push(&(mFunc->getEntryBlock()));
+    while(!bbQueue.empty()) {
+        BasicBlock *curBB = bbQueue.front();
+        bbQueueVisit.insert(curBB);
+        bbQueue.pop();
+        bbGen[curBB] = new set<Instruction *>;
+        bbKill[curBB] = new set<Instruction *>;
+        bbIn[curBB] = new set<Instruction *>;
+        bbOut[curBB] = new set<Instruction *>;
+        
+        for(auto it = curBB->begin(); it != curBB->end(); ++it) {
+            Instruction *curInst = dyn_cast<Instruction>(it);
+            auto curInstOpcode = curInst->getOpcode();
+            if(curInstOpcode == Instruction::Alloca) {
+
+            }
+            else if(curInstOpcode == Instruction::Store) {
+
+            }
+            else if(curInstOpcode == Instruction::Call || curInstOpcode == Instruction::Ret) {
+
+            }
+            else if(curInstOpcode == Instruction::Br) {
+
+            }
+            else {
+
+            }
+        }
+        auto termInst = curBB->getTerminator();
+        int numSuccessor = termInst->getNumSuccessors();
+        for(int idxn = 0; idxn < numSuccessor; ++idxn) {
+            BasicBlock *nextBB = termInst->getSuccessor(idxn);
+            if(!bbQueueVisit.count(nextBB)) 
+                bbQueue.push(nextBB);
+        }
+    }
     bool changed = 1;
     while(changed == 1) {
 
