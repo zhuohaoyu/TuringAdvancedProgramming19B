@@ -189,9 +189,6 @@ public:
     }
 };
 
-
-
-
 // 以下两个以“Share”开始的类仅用于计算数据共享关系
 class ShareDefinition
 {
@@ -392,48 +389,111 @@ void SDDG::buildSDDG()
     // 2. 根据迭代数据流算法，计算IN和OUT
     // 3. 根据每个基本块的IN和use信息，更新数据依赖图
     ////////////////////////////
-    queue<BasicBlock *> bbQueue;
-    set<BasicBlock *> bbQueueVisit;
-    bbQueue.push(&(mFunc->getEntryBlock()));
-    while(!bbQueue.empty()) {
-        BasicBlock *curBB = bbQueue.front();
-        bbQueueVisit.insert(curBB);
-        bbQueue.pop();
-        bbGen[curBB] = new set<Instruction *>;
-        bbKill[curBB] = new set<Instruction *>;
-        bbIn[curBB] = new set<Instruction *>;
-        bbOut[curBB] = new set<Instruction *>;
-        
-        for(auto it = curBB->begin(); it != curBB->end(); ++it) {
-            Instruction *curInst = dyn_cast<Instruction>(it);
+
+    //1. scan for initializing Def of each BB
+    for(auto bbIter = mFunc -> begin(); bbIter != mFunc -> end(); bbIter++) {
+        BasicBlock &bb = *bbIter;
+        bbGen[&bb] = new set<Instruction *>;
+        bbKill[&bb] = new set<Instruction *>;
+        bbIn[&bb] = new set<Instruction *>;
+        bbOut[&bb] = new set<Instruction *>;
+        dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb) ; // bbDef = sDfaDefs[&bb]
+        dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb) ;
+        for(auto instIter = bb.begin() ; instIter != bb.end() ; instIter++ ) {
+            //
+            Instruction *curInst = dyn_cast<Instruction>(instIter);
             auto curInstOpcode = curInst->getOpcode();
             if(curInstOpcode == Instruction::Alloca) {
-
+                continue ;
             }
-            else if(curInstOpcode == Instruction::Store) {
-
+            else if(curInstOpcode == Instruction::Store) { //store src dest
+                Value *fstOp = curInst->getOperand( 0 ) ;
+                Value *sndOp = curInst->getOperand( 1 ) ;
+                if( !bbDef->getDef( fstOp ) ){
+                    bbUse->createUse( fstOp , curInst ) ;
+                }
+                bbDef->define( sndOp , curInst ) ;
             }
-            else if(curInstOpcode == Instruction::Call || curInstOpcode == Instruction::Ret) {
-
+            else if(curInstOpcode == Instruction::Call ) {
+                if( !curInst->use_empty() ){ // 被用过，是定义，是call
+                    Value *lvalue = dyn_cast<Value>(curInst) ;
+                    bbDef->define( lvalue , curInst ) ;
+                }
+                unsigned int nOprands = curInst->getNumOperands() ;
+                --nOprands ;//最后一个返回的operand是函数定义，不要
+                for( int idx = 0 ; idx < nOprands ; idx ++ ){
+                    Value *op = curInst->getOperand( idx ) ;
+                    if( !bbDef->getDef( op ) ){
+                        bbUse->createUse( op , curInst ) ;
+                    }
+                }
+            } else if(curInstOpcode == Instruction::Br || curInstOpcode == Instruction::Ret ) {
+                int nOprands = curInst->getNumOperands() ;
+                for( int idx = 0 ; idx < nOprands ; idx ++ ){
+                    Value *op = curInst->getOperand( idx ) ;
+                    if( !bbDef->getDef( op ) ){
+                        bbUse->createUse( op , curInst ) ;
+                    }
+                }
+            } else {
+                if( !curInst->use_empty() ){//被使用过，是一个定义
+                    Value *lvalue = dyn_cast<Value>(curInst) ;
+                    bbDef->define( lvalue , curInst ) ;
+                }
             }
-            else if(curInstOpcode == Instruction::Br) {
-
-            }
-            else {
-
-            }
-        }
-        auto termInst = curBB->getTerminator();
-        int numSuccessor = termInst->getNumSuccessors();
-        for(int idxn = 0; idxn < numSuccessor; ++idxn) {
-            BasicBlock *nextBB = termInst->getSuccessor(idxn);
-            if(!bbQueueVisit.count(nextBB)) 
-                bbQueue.push(nextBB);
         }
     }
+
+    for(auto bbIter = mFunc -> begin(); bbIter != mFunc -> end(); bbIter++) {
+        BasicBlock &bb = *bbIter;        
+        dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb) ; // bbDef = sDfaDefs[&bb]
+        dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb) ;
+        for( auto defIter : bbDef->getDef() ) bbGen[&bb] -> insert( defIter.second ) ;
+        bbOut = bbGen ;
+    }
+
+    queue<BasicBlock *> bbQueue;
+    set<BasicBlock *> bbQueueVisit;
     bool changed = 1;
     while(changed == 1) {
+        while(!bbQueue.empty()) bbQueue.pop();
+        bbQueueVisit.clear();
+        bbQueue.push(&(mFunc->getEntryBlock()));
+        while(!bbQueue.empty()) {
+            BasicBlock *curBB = bbQueue.front();
+            bbQueueVisit.insert(curBB);
+            bbQueue.pop();
+            for( )
+            
+            //
+            
+            for(auto it = curBB->begin(); it != curBB->end(); ++it) {
+                Instruction *curInst = dyn_cast<Instruction>(it);
+                auto curInstOpcode = curInst->getOpcode();
+                if(curInstOpcode == Instruction::Alloca) {
+                    
+                }
+                else if(curInstOpcode == Instruction::Store) {
 
+                }
+                else if(curInstOpcode == Instruction::Call || curInstOpcode == Instruction::Ret) {
+                    
+                }
+                else if(curInstOpcode == Instruction::Br) {
+                    
+                }
+                else {
+
+                }
+            }
+            auto termInst = curBB->getTerminator();
+            int numSuccessor = termInst->getNumSuccessors();
+            for(int idxn = 0; idxn < numSuccessor; ++idxn) {
+                BasicBlock *nextBB = termInst->getSuccessor(idxn);
+                if(!bbQueueVisit.count(nextBB)) 
+                    bbQueue.push(nextBB);
+            }
+        }
     }
     // 以下是创建数据共享关系的代码，其中有一处需要同学们自行处理，所依赖的mergeTwoMaps函数需要
     // 同学们去实现。
@@ -685,6 +745,13 @@ void SDDG::buildSDDG()
     // 清理数据结构，主要是本函数内的各种map之类的数据结构中保存的新分配的内存空间（通过new分配）
     // 需要通过delete释放掉。
     ////////////////////////////
+    for(auto iter = mFunc->begin(); iter != mFunc->end(); ++iter) {
+        BasicBlock *curBB = dyn_cast<BasicBlock>(iter);
+        delete bbIn[curBB];
+        delete bbOut[curBB];
+        delete bbGen[curBB];
+        delete bbKill[curBB];
+    }
 }
 
 } // namespace miner
