@@ -26,9 +26,9 @@ public:
     void getFunctionGraph(Function &F) {
         errs() << "  Function:" << F.getName() << '\n';
         miner::SDDG sddg(&F);
-        sddg.buildSDDG();
-        sddg.flattenSDDG();
-        sddg.dotify();
+        //sddg.buildSDDG();
+        //sddg.flattenSDDG();
+        // sddg.dotify();
     }
 
     virtual bool runOnModule(Module &M) {

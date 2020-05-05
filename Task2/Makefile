@@ -4,5 +4,5 @@ LDFLAGS=`llvm-config --ldflags`
 
 all: MyPass.so
 
-MyPass.so: MyPass.cpp MyPass.h SimpleDataDependenceGraph.cpp SimpleDataDependenceGraph.h
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ MyPass.cpp SimpleDataDependenceGraph.cpp
+MyPass.so: SimpleDataDependenceGraph.cpp SimpleDataDependenceGraph.h MyPass.cpp MyPass.h
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ SimpleDataDependenceGraph.cpp MyPass.cpp 

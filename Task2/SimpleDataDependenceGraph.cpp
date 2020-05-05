@@ -38,9 +38,11 @@ bool SDDG::share(Instruction *fst, Instruction *snd)
 
 bool SDDGNode::addSuccessor(SDDGNode *dst) {
     mSuccessors.push_back(dst);
+    return true;
 }
 bool SDDGNode::addPredecessor(SDDGNode *dst) {
     mPredecessors.push_back(dst);
+    return true;
 }
 
 inline Instruction* SDDGNode::getInst() {
@@ -371,13 +373,16 @@ template <typename TSE>
 bool mergeTwoMaps(map<Value *, set<TSE *> *> &to, map<Value *, set<TSE *> *> &from)
 {
     bool changed = false;
-    for(auto it = from->begin(); it != from->end(); ++it) {
+    for(auto it = from.begin(); it != from.end(); ++it) {
         Value *fVal = it->first;
         set<TSE *> *fSet = it->second;
         if(fSet->empty()) continue;
         if(!to.count(fVal)) { // new key value
             changed = true;
-            to[fVal] = new set<TSE *>(fSet);
+            to[fVal] = new set<TSE *>;
+            for(auto fElem : *fSet) {
+                to[fVal] -> insert(fElem);
+            }
         }
         else { // key already exist
             for(TSE* fElem : (*fSet)) {
@@ -551,12 +556,15 @@ void SDDG::buildSDDG()
 
     for( auto bbIter = mFunc -> begin() ; bbIter != mFunc->end() ; bbIter++ ){
         BasicBlock *bb = dyn_cast<BasicBlock>(bbIter);
-        auto curUse = dfa::findOrCreate(sDfaUses, bb)->getmUse() ;// map& : value* to set<inst*>*
-        auto curIn = bbIn[bb] ; // set of in Inst
-        for( auto valUse : curUse ){ // get every  val-set pair
-            
-            for( auto useInst : ( *valUse.second ) ){ // get Inst
-                
+        auto curUses = dfa::findOrCreate(sDfaUses, bb)->getmUse() ;// map& : value* to set<inst*>*
+        auto curIn = bbIn[bb] ; // map of in Inst
+        for( auto curUse : curUses ){ // get every  val-set pair
+            Value *valUse = curUse.first ;
+            for( auto useInst : ( *curUse.second ) ){ // get Inst
+                for( auto defInst : (*(*curIn)[valUse]) ){
+                    mNodes[useInst]->addPredecessor( mNodes[defInst] ) ;
+                    mNodes[defInst]->addSuccessor( mNodes[useInst] ) ;
+                }
             }
             
         }
