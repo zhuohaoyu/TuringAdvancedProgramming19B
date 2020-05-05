@@ -468,16 +468,17 @@ void SDDG::buildSDDG()
                 }
             } else if(curInstOpcode == Instruction::Br || curInstOpcode == Instruction::Ret ) {
                 int nOprands = curInst->getNumOperands() ;
-                for( int idx = 0 ; idx < nOprands ; idx ++ ){
+                for( int idx = 0 ; idx < nOprands ; idx ++ ) {
                     Value *op = curInst->getOperand( idx ) ;
-                    if( !bbDef->getDef( op ) ){
+                    if( !bbDef->getDef( op ) ) {
                         bbUse->createUse( op , curInst ) ;
                     } else { // 能够直接获取块内定义，加边
                         mNodes[curInst]->addPredecessor( bbDef->getDef( op ) ) ;
                         mNodes[ bbDef->getDef( op ) ]->addSuccessor( curInst ) ;
                     }
+                }
             } else {
-                if( !curInst->use_empty() ){//被使用过，是一个定义
+                if( !curInst->use_empty() ) {//被使用过，是一个定义
                     Value *lvalue = dyn_cast<Value>(curInst) ;
                     bbDef->define( lvalue , curInst ) ;
                 }
@@ -495,7 +496,7 @@ void SDDG::buildSDDG()
 
     queue<BasicBlock *> bbQueue;
     set<BasicBlock *> bbQueueVisit;
-    set< Instruction* >* tmpIn, tmpOut ; //?
+    set< Instruction* > tmpIn ; //?
     bool changed = 1;
     while(changed == 1) {
         while(!bbQueue.empty()) bbQueue.pop();
@@ -507,40 +508,21 @@ void SDDG::buildSDDG()
             bbQueueVisit.insert(curBB);
             bbQueue.pop();
             
-            
-            //tmpIn.clear() ; //?
             for( auto preBBit = pred_begin(curBB) , endBBit = pred_end(curBB) ; preBBit != endBBit ; ++preBBit ){
                 BasicBlock* preBB = *preBBit;
                 dfa::mergeTwoSet(bbOut[preBB], bbIn[curBB]);
-                tmpOut = bbOut[preBB];
+                set< Instruction* > tmpOut(*bbOut[preBB]);
                 for(auto tmpDef: sDfaDefs[preBB] -> getDef()) {
-                    
-
+                    if(sDfaDefs[curBB] -> getDef(tmpDef.first) != nullptr) {
+                        tmpOut.erase(tmpDef.second);
+                    }
                 }
-            }            
+                changed |= dfa::mergeTwoSet(&tmpOut, bbOut[curBB]);
+            }                
             // wys code ^
 
             //bbIn[curBB];
             
-            for(auto it = curBB->begin(); it != curBB->end(); ++it) {
-                Instruction *curInst = dyn_cast<Instruction>(it);
-                auto curInstOpcode = curInst->getOpcode();
-                if(curInstOpcode == Instruction::Alloca) {
-                    
-                }
-                else if(curInstOpcode == Instruction::Store) {
-
-                }
-                else if(curInstOpcode == Instruction::Call || curInstOpcode == Instruction::Ret) {
-                    
-                }
-                else if(curInstOpcode == Instruction::Br) {
-                    
-                }
-                else {
-
-                }
-            }
             auto termInst = curBB->getTerminator();
             int numSuccessor = termInst->getNumSuccessors();
             for(int idxn = 0; idxn < numSuccessor; ++idxn) {
