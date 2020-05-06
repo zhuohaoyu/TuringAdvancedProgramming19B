@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <ctime>
 
 #include "llvm/IR/CFG.h"
 #include "llvm/IR/Instructions.h"
@@ -412,9 +411,9 @@ void SDDG::buildSDDG() {
     // 2. 根据迭代数据流算法，计算IN和OUT
     // 3. 根据每个基本块的IN和use信息，更新数据依赖图
     ////////////////////////////
-    
+
     //初始化每个BasicBlock的Definition和Use，并将块内的关系加边
-   // int clock1 = std::clock() ;
+ //   int clock1 = std::clock();
 
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock &bb = *bbIter;
@@ -493,7 +492,7 @@ void SDDG::buildSDDG() {
                 }
                 if (!ok) continue;
                 // 如果没有定义，但有使用参数，我们仍为其ji
-                if( !mNodes.count( curInst ) ) mNodes[curInst] = new SDDGNode(curInst);
+                if (!mNodes.count(curInst)) mNodes[curInst] = new SDDGNode(curInst);
                 for (int idx = 0; idx < nOprands; idx++) {
                     Value *op = curInst->getOperand(idx);
                     if (!isa<Argument>(op) && !isa<Instruction>(op)) continue;
@@ -522,8 +521,9 @@ void SDDG::buildSDDG() {
             (*bbOut[&bb])[defIter.first]->insert(defIter.second);
         }
     }
-    
- //   errs() << "preWork: " << 1.0 * (std::clock()-clock1)/CLOCKS_PER_SEC << "\n"; clock1 = std::clock() ;
+
+//    errs() << "preWork: " << 1.0 * (std::clock() - clock1) / CLOCKS_PER_SEC << "\n";
+ //   clock1 = std::clock();
 
     //迭代数据流算法
     queue<BasicBlock *> bbQueue;
@@ -543,16 +543,16 @@ void SDDG::buildSDDG() {
                 for (auto preBBit = pred_begin(curBB), endBBit = pred_end(curBB); preBBit != endBBit; ++preBBit) {
                     BasicBlock *preBB = *preBBit;
                     dfa::mergeTwoMaps(*bbIn[curBB], *bbOut[preBB]);  // 合并前驱的Out到当前的In
-                    DenseMap<Value *, set<Instruction *> *> tmpOut(*(bbOut[preBB]));
-                    //检查Out(pre)的所有 Instruction 是否被重定义
-                    for (auto tmpDef : *bbOut[preBB]) {  // 寻找是否被重定义，如果有，则被kill
-                        Value *lvalue = tmpDef.first;
-                        if (sDfaDefs[curBB]->getDef(lvalue) != nullptr) {
-                            tmpOut.erase(tmpDef.first);
-                        }
-                    }
-                    changed |= dfa::mergeTwoMaps(*bbOut[curBB], tmpOut);
                 }
+                DenseMap<Value *, set<Instruction *> *> tmpOut(*(bbIn[curBB]));
+
+                for (auto tmpDef : tmpOut) {  // 寻找是否被重定义，如果有，则被kill
+                    Value *lvalue = tmpDef.first;
+                    if (sDfaDefs[curBB]->getDef(lvalue) != nullptr) {
+                        tmpOut.erase(tmpDef.first);
+                    }
+                }
+                changed |= dfa::mergeTwoMaps(*bbOut[curBB], tmpOut);
                 changed |= dfa::mergeTwoMaps(*bbOut[curBB], *bbGen[curBB]);
             }
             // 将当前BasicBlock的未访问过的后继加入队列
@@ -566,8 +566,8 @@ void SDDG::buildSDDG() {
         }
     }
 
-    
- //   errs() << "diedai: " << 1.0 * (std::clock()-clock1)/CLOCKS_PER_SEC << "\n"; clock1 = std::clock() ;
+ //   errs() << "diedai: " << 1.0 * (std::clock() - clock1) / CLOCKS_PER_SEC << "\n";
+  //  clock1 = std::clock();
     //加边
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock *bb = dyn_cast<BasicBlock>(bbIter);
@@ -585,8 +585,9 @@ void SDDG::buildSDDG() {
         }
     }
 
-   // errs() << "last add edge: " << 1.0 * (std::clock()-clock1)/CLOCKS_PER_SEC << "\n"; clock1 = std::clock() ;
-    
+//    errs() << "last add edge: " << 1.0 * (std::clock() - clock1) / CLOCKS_PER_SEC << "\n";
+ //   clock1 = std::clock();
+
     // 以下是创建数据共享关系的代码，其中有一处需要同学们自行处理，所依赖的mergeTwoMaps函数需要
     // 同学们去实现。
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -818,7 +819,7 @@ void SDDG::buildSDDG() {
         }
     }
     for (auto it : sDfaDefs) {  // DenseMap<BasicBlock *, dfa::Definition *> sDfaDefs;
-        if (it.second != nullptr) 
+        if (it.second != nullptr)
             delete it.second;
     }
     for (auto it : sDfaUses) {  // DenseMap<BasicBlock *, dfa::Use *> sDfaUses;
