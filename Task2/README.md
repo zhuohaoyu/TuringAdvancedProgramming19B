@@ -101,7 +101,7 @@ Module:TestMe.c
 
 由于加边顺序不同，得出的图片会与标准图片样子不太一样，但是点和边的关系相同。
 
-![TestMe](README.assets/TestMe.png"TestMe.png")
+![TestMe](README.assets/TestMe.png)
 
 <center> TestMe.png<center/>
 
