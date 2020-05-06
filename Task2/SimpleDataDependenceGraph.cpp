@@ -97,7 +97,7 @@ unsigned int BKDRHash(string s, unsigned int seed = 13131) {
 }
 
 namespace {
-void dotifyToFile(map<Instruction *, SDDGNode *> &nodes, set<pair<Instruction *, Instruction *>> &shares, string &file, bool showShareRelations, bool hashed = false) {
+void dotifyToFile(DenseMap<Instruction *, SDDGNode *> &nodes, set<pair<Instruction *, Instruction *>> &shares, string &file, bool showShareRelations, bool hashed = false) {
     ofstream fos;
     fos.open(file);
     fos << "digraph {\n"
@@ -178,7 +178,7 @@ void SDDG::dotify(bool showShareRelations) {
 
 namespace dfa {
 class Definition {
-    map<Value *, Instruction *> mDef;
+    DenseMap<Value *, Instruction *> mDef;
 
 public:
     Definition() = default;
@@ -188,7 +188,7 @@ public:
     void define(Value *var, Instruction *inst) {
         mDef[var] = inst;
     }
-    map<Value *, Instruction *> &getDef() {
+    DenseMap<Value *, Instruction *> &getDef() {
         return mDef;
     }
     Instruction *getDef(Value *var) {
@@ -212,7 +212,7 @@ public:
 // Use的数据结构(类)应该如何定义，请自行设计完成
 ///////////////////////////
 class Use {
-    map<Value *, set<Instruction *> *> mUse;
+    DenseMap<Value *, set<Instruction *> *> mUse;
 
 public:
     Use() = default;
@@ -224,7 +224,7 @@ public:
         }
         mUse.clear();
     }
-    map<Value *, set<Instruction *> *> &getmUse() {
+    DenseMap<Value *, set<Instruction *> *> &getmUse() {
         return mUse;
     }
     void createUse(Value *val, Instruction *inst) {
@@ -244,7 +244,7 @@ public:
 
 // 以下两个以“Share”开始的类仅用于计算数据共享关系
 class ShareDefinition {
-    map<Value *, set<Value *> *> mShareDef;
+    DenseMap<Value *, set<Value *> *> mShareDef;
 
 public:
     ShareDefinition() = default;
@@ -256,7 +256,7 @@ public:
         }
         mShareDef.clear();
     }
-    map<Value *, set<Value *> *> &getShareDefs() {
+    DenseMap<Value *, set<Value *> *> &getShareDefs() {
         return mShareDef;
     }
     set<Value *> *getShareDef(Value *var) {
@@ -298,7 +298,7 @@ public:
     }
 };
 class ShareUse {
-    map<Value *, set<Instruction *> *> mShareUse;
+    DenseMap<Value *, set<Instruction *> *> mShareUse;
     set<Instruction *> *findOrCreateSharedUse(Value *var) {
         auto iter = mShareUse.find(var);
         if (iter != mShareUse.end())
@@ -318,7 +318,7 @@ public:
         }
         mShareUse.clear();
     }
-    map<Value *, set<Instruction *> *> &getShareUses() {
+    DenseMap<Value *, set<Instruction *> *> &getShareUses() {
         return mShareUse;
     }
     set<Instruction *> *getShareUse(Value *var) {
@@ -353,7 +353,7 @@ public:
 };
 
 template <typename TK, typename TV>
-TV *findOrCreate(map<TK *, TV *> &ian, TK *bb) {
+TV *findOrCreate(DenseMap<TK *, TV *> &ian, TK *bb) {
     auto iter = ian.find(bb);
     TV *agr = nullptr;
     if (iter == ian.end()) {
@@ -367,7 +367,7 @@ TV *findOrCreate(map<TK *, TV *> &ian, TK *bb) {
 
 // TRUE for changes in 'to'; FALSE for no changes in 'to'.
 template <typename TSE>
-bool mergeTwoMaps(map<Value *, set<TSE *> *> &to, map<Value *, set<TSE *> *> &from) {
+bool mergeTwoMaps(DenseMap<Value *, set<TSE *> *> &to, DenseMap<Value *, set<TSE *> *> &from) {
     bool changed = false;
     for (auto it = from.begin(); it != from.end(); ++it) {
         Value *fVal = it->first;
@@ -402,9 +402,9 @@ bool mergeTwoMaps(map<Value *, set<TSE *> *> &to, map<Value *, set<TSE *> *> &fr
 
 void SDDG::buildSDDG() {
     bool changed = 1;
-    map<BasicBlock *, dfa::Definition *> sDfaDefs;
-    map<BasicBlock *, dfa::Use *> sDfaUses;
-    map<BasicBlock *, map<Value *, set<Instruction *> *> *> bbGen, bbIn, bbOut;
+    DenseMap<BasicBlock *, dfa::Definition *> sDfaDefs;
+    DenseMap<BasicBlock *, dfa::Use *> sDfaUses;
+    DenseMap<BasicBlock *, DenseMap<Value *, set<Instruction *> *> *> bbGen, bbIn, bbOut;
     ////////////////////////////
     // 在这里实现构建数据依赖关系的代码，可按照如下基本步骤进行：
     // 1. 初始化每个基本块的gen和kill、definition和use，并建立基本块内部的数据依赖关系
@@ -415,9 +415,9 @@ void SDDG::buildSDDG() {
     //初始化每个BasicBlock的Definition和Use，并将块内的关系加边
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock &bb = *bbIter;
-        bbGen[&bb] = new map<Value *, set<Instruction *> *>;
-        bbIn[&bb] = new map<Value *, set<Instruction *> *>;
-        bbOut[&bb] = new map<Value *, set<Instruction *> *>;
+        bbGen[&bb] = new DenseMap<Value *, set<Instruction *> *>;
+        bbIn[&bb] = new DenseMap<Value *, set<Instruction *> *>;
+        bbOut[&bb] = new DenseMap<Value *, set<Instruction *> *>;
         dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb);  // bbDef = sDfaDefs[&bb]
         dfa::Use *bbUse = dfa::findOrCreate(sDfaUses, &bb);
         for (auto instIter = bb.begin(); instIter != bb.end(); instIter++) {
@@ -503,7 +503,7 @@ void SDDG::buildSDDG() {
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock &bb = *bbIter;
         dfa::Definition *bbDef = dfa::findOrCreate(sDfaDefs, &bb);  // bbDef = sDfaDefs[&bb]
-        for (auto defIter : bbDef->getDef()) {                      // map<BasicBlock *, map<Value*, set<Instruction*>* >* >
+        for (auto defIter : bbDef->getDef()) {                      // DenseMap<BasicBlock *, DenseMap<Value*, set<Instruction*>* >* >
             if ((*bbGen[&bb])[defIter.first] == nullptr)
                 (*bbGen[&bb])[defIter.first] = new set<Instruction *>;
             (*bbGen[&bb])[defIter.first]->insert(defIter.second);
@@ -518,7 +518,7 @@ void SDDG::buildSDDG() {
     //迭代数据流算法
     queue<BasicBlock *> bbQueue;
     set<BasicBlock *> bbQueueVisit;
-    map<Value *, Instruction *> tmpIn;
+    DenseMap<Value *, Instruction *> tmpIn;
     while (changed == true) {
         while (!bbQueue.empty()) bbQueue.pop();
         bbQueueVisit.clear();
@@ -533,7 +533,7 @@ void SDDG::buildSDDG() {
                 for (auto preBBit = pred_begin(curBB), endBBit = pred_end(curBB); preBBit != endBBit; ++preBBit) {
                     BasicBlock *preBB = *preBBit;
                     dfa::mergeTwoMaps(*bbIn[curBB], *bbOut[preBB]);  // 合并前驱的Out到当前的In
-                    map<Value *, set<Instruction *> *> tmpOut(*(bbOut[preBB]));
+                    DenseMap<Value *, set<Instruction *> *> tmpOut(*(bbOut[preBB]));
                     //检查Out(pre)的所有 Instruction 是否被重定义
                     for (auto tmpDef : *bbOut[preBB]) {  // 寻找是否被重定义，如果有，则被kill
                         Value *lvalue = tmpDef.first;
@@ -558,8 +558,8 @@ void SDDG::buildSDDG() {
     //加边
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock *bb = dyn_cast<BasicBlock>(bbIter);
-        auto curUses = dfa::findOrCreate(sDfaUses, bb)->getmUse();  // map& : value* to set<inst*>*
-        auto curIn = bbIn[bb];                                      // map of in Inst
+        auto curUses = dfa::findOrCreate(sDfaUses, bb)->getmUse();  // DenseMap& : value* to set<inst*>*
+        auto curIn = bbIn[bb];                                      // DenseMap of in Inst
         for (auto curUse : curUses) {                               // get every  val-set pair
             Value *valUse = curUse.first;
             for (auto useInst : (*curUse.second)) {  // get Inst
@@ -580,10 +580,10 @@ void SDDG::buildSDDG() {
     // IN(ShareUse : B) = \/[P of B's predecessor](OUT(ShareUse : P))
     // OUT(ShareUse : B) =  (IN(ShareUse : B) - Def(B)) \/ ShareUse(B)
     // Be careful that "\/" may not a simple merge, but an update with particular operations.
-    map<BasicBlock *, dfa::ShareDefinition *> sDefIN, sDefOUT;
-    map<BasicBlock *, dfa::ShareUse *> sUseIN, sUseOUT;
-    map<BasicBlock *, dfa::ShareDefinition *> sDfaShareDefs;
-    map<BasicBlock *, dfa::ShareUse *> sDfaShareUses;
+    DenseMap<BasicBlock *, dfa::ShareDefinition *> sDefIN, sDefOUT;
+    DenseMap<BasicBlock *, dfa::ShareUse *> sUseIN, sUseOUT;
+    DenseMap<BasicBlock *, dfa::ShareDefinition *> sDfaShareDefs;
+    DenseMap<BasicBlock *, dfa::ShareUse *> sDfaShareUses;
     // 1. scan for initializing ShareDef and ShareUse of each BB
     for (auto bbIter = mFunc->begin(); bbIter != mFunc->end(); bbIter++) {
         BasicBlock &bb = *bbIter;
@@ -707,9 +707,9 @@ void SDDG::buildSDDG() {
             // 2.2 compute OUT
             // 2.2.1 ShareDef: tmpOUT = IN(ShareDef : B) - Def(B) [rm all Defs in IN if re-defined]
             dfa::Definition *bbDef = sDfaDefs[&bb];
-            map<Value *, Instruction *> &bbDefs = bbDef->getDef();
-            map<Value *, set<Value *> *> &bbSDefIns = bbSDefIN->getShareDefs();
-            map<Value *, set<Value *> *> &bbSDefTmpOUT = tmpSDefOUT.getShareDefs();
+            DenseMap<Value *, Instruction *> &bbDefs = bbDef->getDef();
+            DenseMap<Value *, set<Value *> *> &bbSDefIns = bbSDefIN->getShareDefs();
+            DenseMap<Value *, set<Value *> *> &bbSDefTmpOUT = tmpSDefOUT.getShareDefs();
             for (auto iter = bbSDefIns.begin(); iter != bbSDefIns.end(); iter++) {
                 Value *key = iter->first;
                 auto miter = bbDefs.find(key);
@@ -729,8 +729,8 @@ void SDDG::buildSDDG() {
             // 2.2.3 ShareDef: merge tmpOUT to OUT(ShareDef)
             changed = dfa::mergeTwoMaps(bbSDefOUT->getShareDefs(), tmpSDefOUT.getShareDefs()) | changed;
             // 2.2.4 ShareUse: tmpOUT = IN(ShareUse : B) - Def(B)
-            map<Value *, set<Instruction *> *> &bbSUseIns = bbSUseIN->getShareUses();
-            map<Value *, set<Instruction *> *> &bbSUseTmpOUT = tmpSUseOUT.getShareUses();
+            DenseMap<Value *, set<Instruction *> *> &bbSUseIns = bbSUseIN->getShareUses();
+            DenseMap<Value *, set<Instruction *> *> &bbSUseTmpOUT = tmpSUseOUT.getShareUses();
             for (auto iter = bbSUseIns.begin(); iter != bbSUseIns.end(); iter++) {
                 Value *key = iter->first;
                 auto miter = bbDefs.find(key);
@@ -762,7 +762,7 @@ void SDDG::buildSDDG() {
         dfa::ShareDefinition *bbSDefIN = dfa::findOrCreate(sDefIN, &bb);
         dfa::ShareUse *bbSUseIN = dfa::findOrCreate(sUseIN, &bb);
         dfa::ShareUse *bbSUse = sDfaShareUses[&bb];
-        map<Value *, set<Instruction *> *> &bbSuses = bbSUse->getShareUses();
+        DenseMap<Value *, set<Instruction *> *> &bbSuses = bbSUse->getShareUses();
         for (auto iter = bbSuses.begin(); iter != bbSuses.end(); iter++) {
             Value *key = iter->first;
             set<Instruction *> *suseSet = iter->second;
@@ -788,7 +788,7 @@ void SDDG::buildSDDG() {
     for (auto iter = mFunc->begin(); iter != mFunc->end(); ++iter) {
         BasicBlock *curBB = dyn_cast<BasicBlock>(iter);
         auto cbi = bbIn[curBB], cbo = bbOut[curBB], cbg = bbGen[curBB];
-        for (auto iter2 = cbi->begin(); iter2 != cbi->end(); ++iter2) {  // iter2->second: map<..., set<...> *> *
+        for (auto iter2 = cbi->begin(); iter2 != cbi->end(); ++iter2) {  // iter2->second: DenseMap<..., set<...> *> *
             if (iter2->second == nullptr) continue;
             delete iter2->second;
         }
@@ -801,11 +801,11 @@ void SDDG::buildSDDG() {
             delete iter2->second;
         }
     }
-    for (auto it : sDfaDefs) {  // map<BasicBlock *, dfa::Definition *> sDfaDefs;
+    for (auto it : sDfaDefs) {  // DenseMap<BasicBlock *, dfa::Definition *> sDfaDefs;
         if (it.second != nullptr) 
             delete it.second;
     }
-    for (auto it : sDfaUses) {  // map<BasicBlock *, dfa::Use *> sDfaUses;
+    for (auto it : sDfaUses) {  // DenseMap<BasicBlock *, dfa::Use *> sDfaUses;
         if (it.second != nullptr)
             delete it.second;  // ~Use()负责释放内层set<>
     }

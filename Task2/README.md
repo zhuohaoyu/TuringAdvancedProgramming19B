@@ -69,9 +69,71 @@ Thread model: posix
 
 在计算数据依赖关系时，新定义了Use类，对于每一个Value维护对应的Instruction的集合，表示数据使用关系。Use类内维护了一个键值为Value*，存储值为set指针的map。提供了createUse()和deleteUse()两个接口，分别表示创建/删除某个使用关系。
 
+性能方面，注意到程序中大量使用map和set的嵌套，这样最坏的时间复杂度为$$O(nlog^3n)$$，查阅资料得知LLVM自带的DenseMap实现了一个带有二次探测的哈希表，均摊时间空间复杂度为$$O(1)$$，优于stl::map和stl::unordered_map，而且在这个项目中，我们并不依赖map的有序特性，因此直接将所有的map环城DenseMap可以通过消耗稍多一点的空间，减少大量时间消耗。这种方法唯一的缺点在于DenseMap会在初始化时分配一些空间，增加了空间消耗。
 
+下面是StackOverflow上关于DenseMap和map的性能对比：
 
+![img](README.assets/rnw9R.png)
 
+![img](README.assets/Xn3S6.png)
 
 ## 运行结果
+
+```shell
+$ make && ./analyze.sh
+`llvm-config --bindir`/clang `llvm-config --cxxflags` -shared -fPIC `llvm-config --ldflags` -o MyPass.so SimpleDataDependenceGraph.cpp MyPass.cpp 
+Module:TestMe.c
+ + Function:TestMe
+ + Function:xfunc
+   - Empty Function
+ + Function:yfunc
+   - Empty Function
+ + Function:test
+   - Empty Function
+ + Function:foo
+   - Empty Function
+ + Function:bar
+   - Empty Function
+ + Function:TestMe_other
+```
+
+
+
+由于加边顺序不同，得出的图片会与标准图片样子不太一样，但是点和边的关系相同。
+
+![TestMe](README.assets/TestMe.png"TestMe.png")
+
+<center> TestMe.png<center/>
+
+
+
+![TestMe.flat](README.assets/TestMe.flat.png)
+
+<center> TestMe.flat.png<center/>
+
+
+
+![TestMe.transaction](README.assets/TestMe.transaction.png)
+
+<center> TestMe.transaction.png<center/>
+
+​    
+
+![TestMe_other](README.assets/TestMe_other.png)
+
+<center> TestMe_other.png <center/>
+    
+</center>
+
+
+
+![TestMe_other.flat](README.assets/TestMe_other.flat.png)
+
+<center> TestMe_other.flat.png <center/>
+
+
+
+![TestMe_other.transaction](README.assets/TestMe_other.transaction.png)
+
+<center> TestMe_other.transaction.png <center/>
 

@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include "llvm/ADT/DenseMap.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Function.h"
 
@@ -45,8 +46,8 @@ class SDDG
 {
 private:
     Function *mFunc;
-    map<Instruction *, SDDGNode *> mNodes;
-    map<Instruction *, SDDGNode *> mInterestingNodes;
+    DenseMap<Instruction *, SDDGNode *> mNodes;
+    DenseMap<Instruction *, SDDGNode *> mInterestingNodes;
     set<pair<Instruction *, Instruction *>> mShares;
     bool share(Instruction *fst, Instruction *snd);
 
