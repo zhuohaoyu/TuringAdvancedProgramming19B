@@ -58,7 +58,6 @@ public:
     void buildSDDG();
     // 将数据依赖图中的无关元素去除，仅保留所关注的元素
     void flattenSDDG();
-    void hashSDDG();
     // 基于LLVM IR的信息，不做任何概念上的改变，创建数据依赖图
     //void buildLegacySDDG();
     // 提供将数据依赖图转化为dot文件的方法，对于将字符串映射为整数之后，如何转化，请自行设计实现。
@@ -66,7 +65,6 @@ public:
     // 获得dot文件后（加上名为Test_func.dot，执行命令：dot -Tpng -o a.png Test_func.dot可生成相应
     // 的图形文件（可修改输出格式，生成其他格式如jpg、svg等的图形文件）【需安装Graphviz】。
     void dotify(bool showShareRelations = true);
-    void dotifyHashed(bool showShareRelations = true);
 };
 
 } // namespace miner
