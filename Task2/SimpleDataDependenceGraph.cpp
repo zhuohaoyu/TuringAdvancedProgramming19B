@@ -518,7 +518,7 @@ void SDDG::buildSDDG() {
     //迭代数据流算法
     queue<BasicBlock *> bbQueue;
     set<BasicBlock *> bbQueueVisit;
-    DenseMap<Value *, Instruction *> tmpIn;
+    DenseMap<Value *, set<Instruction *> *> tmpIn; //DenseMap<Value *, set<Instruction *> *>
     while (changed == true) {
         while (!bbQueue.empty()) bbQueue.pop();
         bbQueueVisit.clear();
@@ -528,11 +528,14 @@ void SDDG::buildSDDG() {
         while (!bbQueue.empty()) {
             BasicBlock *curBB = bbQueue.front();
             bbQueueVisit.insert(curBB);
-            bbQueue.pop();
+            bbQueue.pop();        
+            tmpIn.clear();
             if (curBB != (&(mFunc->getEntryBlock()))) {
                 for (auto preBBit = pred_begin(curBB), endBBit = pred_end(curBB); preBBit != endBBit; ++preBBit) {
                     BasicBlock *preBB = *preBBit;
-                    dfa::mergeTwoMaps(*bbIn[curBB], *bbOut[preBB]);  // 合并前驱的Out到当前的In
+                    dfa::mergeTwoMaps(*bbIn[curBB], *bbOut[preBB]);
+                    dfa::mergeTwoMaps(tmpIn, *bbOut[preBB]);  // 合并前驱的Out到当前的In
+                    /*
                     DenseMap<Value *, set<Instruction *> *> tmpOut(*(bbOut[preBB]));
                     //检查Out(pre)的所有 Instruction 是否被重定义
                     for (auto tmpDef : *bbOut[preBB]) {  // 寻找是否被重定义，如果有，则被kill
@@ -542,7 +545,16 @@ void SDDG::buildSDDG() {
                         }
                     }
                     changed |= dfa::mergeTwoMaps(*bbOut[curBB], tmpOut);
+                    */
                 }
+                
+                for (auto tmpDef : *bbIn[curBB]) {
+                    Value *lvalue = tmpDef.first;
+                    if (sDfaDefs[curBB]->getDef(lvalue) != nullptr) {
+                        tmpIn.erase(tmpDef.first);
+                    }
+                }
+                changed |= dfa::mergeTwoMaps(*bbOut[curBB], tmpIn);
                 changed |= dfa::mergeTwoMaps(*bbOut[curBB], *bbGen[curBB]);
             }
             // 将当前BasicBlock的未访问过的后继加入队列
