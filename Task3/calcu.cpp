@@ -88,9 +88,9 @@ FuncInfo::FuncInfo( SDDG* S , SupportInfo *SP_ ){
     
     // add share & dependence edges into the vector"edges"
     DenseMap<Instruction *, SDDGNode *> &ItoNs = S->getItstNodes() ;
-    for( auto u : ItoNs ){
-        sddgNodes[u.first] = new sddgNode( u.first , u.second , this ) ;
-    }
+    for( auto u : ItoNs ) sddgNodes[u.first] = new sddgNode() ;
+    for( auto u : ItoNs )*sddgNodes[u.first] = sddgNode( u.first , u.second , this ) ;
+
     set<pair<Instruction *, Instruction *>> Shares = S->getShares() ;
     for( auto u : Shares ){
         if( (u.first)->getOpcode() != Instruction::Call || (u.second)->getOpcode() != Instruction::Call ) continue ;
@@ -117,12 +117,16 @@ bool FuncInfo::check_sddg( unsigned siz ){
     static set<string*> dfsset ;
     sddgvis.clear() ;
     for( auto u : ltNode ) sddgvis[u] = 0 ;
+//    for( auto u : ltNode ) errs() << *(u->Inst) << "\n" ;
 
     for( auto u : ltNode ){
+        if( sddgvis[u] == 1 ) continue ;
         dfsset.clear() ; sddgVisCnt = 0 ;
         dfs_sddg( u , dfsset ) ;
+    //    errs() << dfsset.size() << " " << siz << " " << sddgVisCnt << " " << " " << siz << "\n" ;
         if( dfsset.size() == siz && sddgVisCnt >= (int)siz ) return true ;
-    } return false ;
+    } 
+    return false ;
 }
 
 int FuncInfo::dfs_SCC( sccNode *u , unordered_set<string> *itemset , unsigned siz ) {
@@ -137,6 +141,7 @@ int FuncInfo::dfs_SCC( sccNode *u , unordered_set<string> *itemset , unsigned si
         if( rt ){ SCCvis[u] = 0 ; return rt ; }
     }
     if( (u->edges).size() == 0 ){
+//        errs() << "enter leaf\n" ; 
         rt |= check_sddg( siz ) ;
     }
     SCCvis[u] = 0 ;
@@ -156,14 +161,18 @@ int FuncInfo::calcu_Func_support( vector<string> *itemset_ ){
     // dependence graph, and it must include every item in the itemset at least once.
     
     // find the entry SCC, then start dfs
+
     if( _Calcu_SP_REM.count( *itemset_) ) return _Calcu_SP_REM[*itemset_] ;
 
+//    errs() << "Func : " << Func->getName() << "\n" ;
     unordered_set<string> itemset ; itemset.clear() ;
-    ltNode.clear() ;
-    for( auto &u : SCCvis ) u.second = 0 ; 
-    itemset.insert( itemset_->begin() , itemset_->end() ) ;
+    ltNode.clear() ; SCCvis.clear() ;
+    for( int i = 0 ; i < SCCvis.size() ; i++ ) SCCvis[ sccNodes[i] ] = 0 ; 
+    for( string u : *itemset_ ) itemset.insert( u ) ;
+    
     int rt = dfs_SCC( SCC[ &(Func->getEntryBlock()) ] , &itemset , (*itemset_).size() ) ;
     _Calcu_SP_REM[ *itemset_ ] = rt ;
+//    errs() << "rt = " << rt << "\n" ;
     return rt ;
 }
 

@@ -5,6 +5,10 @@
 #include <string>
 #include "apriori.h"
 #include "calcu.h"
+#include <iostream>
+
+
+
 using namespace std;
 
 using ItemSet = vector<string>;
@@ -63,7 +67,7 @@ vector<ItemSet> AprioriAlgorithm::expandItemset(vector<ItemSet> s, int K) {
                     }
                 }
                 bool repeatElement = false;
-                for(int k = 0; k < K + 1; ++k) {
+                for(int k = 1; k < K; ++k) {
                     if(uni[k] == uni[k - 1]) {
                         repeatElement = true;
                         break;
@@ -86,13 +90,17 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
     supportInfoAddr = suptr;
     freqItemSet.clear(), infreqItemSet.clear();
     vector< vector<ItemSet> > L, N;
-    L.push_back({{}});
-    N.push_back({{}});
-    L.push_back({singleFreqItemSet});
+    L.resize(2);
+    N.resize(2);
+    for(auto i: singleFreqItemSet) L[1].push_back({i});
     for(int k = 2; !L[k - 1].empty(); ++k) {
+        L.resize(k + 1), N.resize(k + 1);
         vector<ItemSet> S = expandItemset(L[k - 1], k - 1);
+        if(k == 2) {
+            for(auto i: singleFreqItemSet) 
+                S.push_back({i, i});
+        }
         for(auto itemset : S) {
-            // int supp = getItemsetSupport(itemset);
             int supp = supportInfoAddr -> calcu_support(&itemset);
             if(supp >= minFreqSupp) L[k].push_back(itemset);
             else if(supp > 0 && supp < maxInfreqSupp) N[k].push_back(itemset);
@@ -108,5 +116,15 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
                 infreqItemSet.push_back(its);
             }
         }
+    }
+    cout << "Frequent Itemsets:\n";
+    for(auto i: freqItemSet) {
+        for(auto j: i) cout << "\"" << j << "\"" << ','; 
+        cout << endl;
+    }
+    cout << "Infrequent Itemsets:\n";
+    for(auto i: infreqItemSet) {
+        for(auto j: i) cout << "\"" << j << "\"" << ','; 
+        cout << endl;
     }
 }

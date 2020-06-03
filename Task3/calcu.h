@@ -22,8 +22,6 @@
 #include <llvm/ADT/SCCIterator.h>
 
 #include "SimpleDataDependenceGraph.h"
-
-
 namespace SPT_calc{
 
 using namespace llvm;
@@ -55,6 +53,7 @@ public :
     FuncInfo *FC ;
     unordered_set<sddgNode*> edges ;
     Instruction* Inst ;
+    sddgNode() = default ;
     sddgNode( Instruction *pI , SDDGNode* pSN , FuncInfo* FC_ ) ;
     ~sddgNode() = default ;
     void addedge( sddgNode* u ) ;

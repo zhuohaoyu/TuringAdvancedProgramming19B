@@ -15,6 +15,7 @@
 #include "SimpleDataDependenceGraph.h"
 #include "calcu.h"
 #include "apriori.h"
+#include "rule.h"
 
 using namespace llvm;
 using std::vector ;
@@ -46,17 +47,13 @@ public:
             sddg_graphs.push_back( sddg ) ;
         }
         int minFreqSupport = 10 , maxInfreqSupp = 5 ;
+        double minConf = 0.85;
         SupportInfo *spt = new SupportInfo( sddg_graphs , minFreqSupport) ; // Instantiate SI class
-        
-        errs() << "Single frequency are as follows\n" ;
         vector <string> sgfqc = spt->get_single_frequency() ; // this func returns a vector<string>
         AprioriAlgorithm solver(sgfqc, minFreqSupport, maxInfreqSupp, spt);
-        for( auto u : sgfqc ) errs() << "  " << u << " ( support num = " << spt->calcu_support( u ) << " )" << '\n' ;
+        GenRule generator(solver.getFreqItemSet(), solver.getInfreqItemSet(), minConf, spt);
         delete spt ;
         for( auto u : sddg_graphs ) delete u ;
-
-        errs() << "frequency end\n" ;
-        
         return false;
     }
 };
