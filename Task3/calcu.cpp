@@ -107,13 +107,14 @@ FuncInfo::~FuncInfo(){
 
 void FuncInfo::dfs_sddg( sddgNode *u , set<string*>& dfsset ){
     sddgvis[u] = 1 , sddgVisCnt ++ ;
+//    errs() << "     dfs_sddg: " << *(u->Inst) << "\n" ; 
     dfsset.insert( SP->instStr[u->Inst] ) ;
     for( auto v : u->edges ){
         if( ltNode.count( v ) && sddgvis[v] == 0 ) dfs_sddg( v , dfsset ) ;
     }
 }
 
-bool FuncInfo::check_sddg( unsigned siz ){
+bool FuncInfo::check_sddg( unsigned siz1 , unsigned siz2 ){
     static set<string*> dfsset ;
     sddgvis.clear() ;
     for( auto u : ltNode ) sddgvis[u] = 0 ;
@@ -123,8 +124,8 @@ bool FuncInfo::check_sddg( unsigned siz ){
         if( sddgvis[u] == 1 ) continue ;
         dfsset.clear() ; sddgVisCnt = 0 ;
         dfs_sddg( u , dfsset ) ;
-    //    errs() << dfsset.size() << " " << siz << " " << sddgVisCnt << " " << " " << siz << "\n" ;
-        if( dfsset.size() == siz && sddgVisCnt >= (int)siz ) return true ;
+//        errs() << dfsset.size() << " " << siz1 << " " << sddgVisCnt << " " << " " << siz2 << "\n" ;
+        if( dfsset.size() >= siz1 && sddgVisCnt >= (int)siz2 ) return true ;
     } 
     return false ;
 }
@@ -142,7 +143,7 @@ int FuncInfo::dfs_SCC( sccNode *u , unordered_set<string> *itemset , unsigned si
     }
     if( (u->edges).size() == 0 ){
 //        errs() << "enter leaf\n" ; 
-        rt |= check_sddg( siz ) ;
+        rt |= check_sddg( itemset->size() , siz ) ;
     }
     SCCvis[u] = 0 ;
     for( Instruction* pI : u->Insts ){
@@ -164,7 +165,7 @@ int FuncInfo::calcu_Func_support( vector<string> *itemset_ ){
 
     if( _Calcu_SP_REM.count( *itemset_) ) return _Calcu_SP_REM[*itemset_] ;
 
-//    errs() << "Func : " << Func->getName() << "\n" ;
+//    errs() << "Func : " << Func->getName() << " has " << sccNodes.size() << "SCCs" << "\n" ;
     unordered_set<string> itemset ; itemset.clear() ;
     ltNode.clear() ; SCCvis.clear() ;
     for( int i = 0 ; i < SCCvis.size() ; i++ ) SCCvis[ sccNodes[i] ] = 0 ; 

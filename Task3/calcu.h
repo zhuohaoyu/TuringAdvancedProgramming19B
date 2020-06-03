@@ -79,7 +79,7 @@ public:
     ~FuncInfo() ;
     int calcu_Func_support( vector<string> *itemset_ ) ;
     int dfs_SCC( sccNode *u , unordered_set<string> *itemset , unsigned siz ) ;
-    bool check_sddg( unsigned siz ) ;
+    bool check_sddg( unsigned siz1 , unsigned siz2 ) ;
     void dfs_sddg( sddgNode *u , set<string*>& dfsset ) ;
 } ;
 
