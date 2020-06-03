@@ -1,13 +1,6 @@
-#ifndef MY_CALCU_H_
-#define MY_CALCU_H_
+#pragma once
 
-#include <vector>
-#include <unordered_set>
-#include <unordered_map>
-#include <set>
-#include <map>
-#include <string>
-
+#include <llvm/ADT/SCCIterator.h>
 #include <llvm/IR/Argument.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/CFG.h>
@@ -19,104 +12,108 @@
 #include <llvm/IR/ValueSymbolTable.h>
 #include <llvm/Support/Casting.h>
 #include <llvm/Support/raw_ostream.h>
-#include <llvm/ADT/SCCIterator.h>
+
+#include <map>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "SimpleDataDependenceGraph.h"
-namespace SPT_calc{
+namespace SPT_calc {
 
 using namespace llvm;
 using std::map;
 using std::pair;
 using std::set;
 using std::string;
-using std::vector;
-using std::unordered_set;
 using std::unordered_map;
-using namespace miner ;
+using std::unordered_set;
+using std::vector;
+using namespace miner;
 
-class sccNode ;
-class sddgNode ;
-class FuncInfo ;
-class SupportInfo ;
+class sccNode;
+class sddgNode;
+class FuncInfo;
+class SupportInfo;
 
-class sccNode{
-public: 
-    vector<BasicBlock*> BBs ;
-    unordered_set<sccNode*> edges ;
+class sccNode {
+public:
+    vector<BasicBlock*> BBs;
+    unordered_set<sccNode*> edges;
     vector<Instruction*> Insts;
-    sccNode() ;
-    ~sccNode() = default ;
-} ;
+    sccNode();
+    ~sccNode() = default;
+};
 
-class sddgNode{
-public :
-    FuncInfo *FC ;
-    unordered_set<sddgNode*> edges ;
-    Instruction* Inst ;
-    sddgNode() = default ;
-    sddgNode( Instruction *pI , SDDGNode* pSN , FuncInfo* FC_ ) ;
-    ~sddgNode() = default ;
-    void addedge( sddgNode* u ) ;
-} ;
+class sddgNode {
+public:
+    FuncInfo* FC;
+    unordered_set<sddgNode*> edges;
+    Instruction* Inst;
+    sddgNode() = default;
+    sddgNode(Instruction* pI, SDDGNode* pSN, FuncInfo* FC_);
+    ~sddgNode() = default;
+    void addedge(sddgNode* u);
+};
 
-class FuncInfo{
-    friend class sddgNode ;
+class FuncInfo {
+    friend class sddgNode;
+
 private:
-    SupportInfo* SP ;
-    Function* Func ;
-    SDDG *sddg ;
-    vector< sccNode* > sccNodes ;
-    map< BasicBlock* , sccNode* > SCC ;
-    unordered_set< sddgNode* > ltNode ; // lighted Node
-    unordered_map< sccNode* , bool > SCCvis ;
-    unordered_map< sddgNode* , bool > sddgvis ;
-    int sddgVisCnt ;
-    unordered_map< Instruction* , sddgNode* > sddgNodes ;
-    map< vector<string> , int > _Calcu_SP_REM ;
+    SupportInfo* SP;
+    Function* Func;
+    SDDG* sddg;
+    vector<sccNode*> sccNodes;
+    map<BasicBlock*, sccNode*> SCC;
+    unordered_set<sddgNode*> ltNode;  // lighted Node
+    unordered_map<sccNode*, bool> SCCvis;
+    unordered_map<sddgNode*, bool> sddgvis;
+    int sddgVisCnt;
+    unordered_map<Instruction*, sddgNode*> sddgNodes;
+    map<vector<string>, int> _Calcu_SP_REM;
 
 public:
-    FuncInfo( SDDG* S , SupportInfo* SP_) ;
-    ~FuncInfo() ;
-    int calcu_Func_support( vector<string> *itemset_ ) ;
-    int dfs_SCC( sccNode *u , unordered_set<string> *itemset , unsigned siz ) ;
-    bool check_sddg( unsigned siz1 , unsigned siz2 ) ;
-    void dfs_sddg( sddgNode *u , set<string*>& dfsset ) ;
-} ;
+    FuncInfo(SDDG* S, SupportInfo* SP_);
+    ~FuncInfo();
+    int calcu_Func_support(vector<string>* itemset_);
+    int dfs_SCC(sccNode* u, unordered_set<string>* itemset, unsigned siz);
+    bool check_sddg(unsigned siz1, unsigned siz2);
+    void dfs_sddg(sddgNode* u, set<string*>& dfsset);
+};
 
-class SupportInfo{
-    friend class FuncInfo ;
+class SupportInfo {
+    friend class FuncInfo;
+
 private:
     // BB* getParent
-    vector<FuncInfo*> sdgs ;
-    unordered_set<string> sgfqc ; // single_element_frequency 
-    map< Instruction* , string* > instStr ;
-    int sdgs_siz ;
-    const int LIMIT ;
+    vector<FuncInfo*> sdgs;
+    unordered_set<string> sgfqc;  // single_element_frequency
+    map<Instruction*, string*> instStr;
+    int sdgs_siz;
+    const int LIMIT;
 
-    int calcu_Func_support( vector<string> *itemset ) ;
+    int calcu_Func_support(vector<string>* itemset);
     // for each sddg, calculate whether it support the itemset or not
     // the return value can only be 0 or 1 ;
 
-    bool check_dfs_dpg( SDDGNode* u ) ;
+    bool check_dfs_dpg(SDDGNode* u);
     // for each SCC chain in the BB graph
     // check the related Nodes' connection on the dependence graph
 
 public:
-    SupportInfo( vector<SDDG*> &sddg_graphs , int LIMIT_ );
+    SupportInfo(vector<SDDG*>& sddg_graphs, int LIMIT_);
     // process the Funcs, SCC, sccInst, sccSuccessors and instStr
     // and also add the share edge to the mSuccessors & mPresuccessors
-    ~SupportInfo() ;
-    
-    int calcu_support( vector<string> *itemset ) ;
+    ~SupportInfo();
+
+    int calcu_support(vector<string>* itemset);
     // main function we need
 
-    int calcu_support( const string &x ) ;
+    int calcu_support(const string& x);
 
-    vector<string> get_single_frequency() ;
+    vector<string> get_single_frequency();
+};
 
-} ;
-
-}
-
-
-#endif 
+}  // namespace SPT_calc

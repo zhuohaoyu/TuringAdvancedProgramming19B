@@ -1,7 +1,8 @@
 #pragma once
-#include <vector>
 #include <string>
 #include <unordered_set>
+#include <vector>
+
 #include "calcu.h"
 using namespace std;
 using ItemSet = vector<string>;
@@ -12,6 +13,7 @@ public:
     AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupport, int maxInfreqSupp, SPT_calc::SupportInfo *suptr);
     vector<ItemSet> getFreqItemSet();
     vector<ItemSet> getInfreqItemSet();
+
 private:
     SPT_calc::SupportInfo *supportInfoAddr;
     vector<ItemSet> freqItemSet, infreqItemSet;
