@@ -12,6 +12,7 @@ ResultDialog::ResultDialog(QWidget *parent, QStringList ls) :
 {
     ui->setupUi(this);
     out = new QTextEdit();
+    out->setReadOnly(true);
     ui->scrollArea->setWidget(out);
     ui->scrollArea->setWidgetResizable(true);
     for(auto i: result) out->append(i);

@@ -19,7 +19,7 @@
      <rect>
       <x>60</x>
       <y>80</y>
-      <width>680</width>
+      <width>682</width>
       <height>71</height>
      </rect>
     </property>
@@ -83,7 +83,7 @@
       <widget class="QLabel" name="label">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -122,7 +122,7 @@
        </property>
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -137,7 +137,7 @@
       <widget class="QLabel" name="label_3">
        <property name="font">
         <font>
-         <pointsize>11</pointsize>
+         <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
@@ -236,7 +236,7 @@
      <rect>
       <x>590</x>
       <y>200</y>
-      <width>144</width>
+      <width>151</width>
       <height>181</height>
      </rect>
     </property>
@@ -263,6 +263,8 @@
        <property name="font">
         <font>
          <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
         </font>
        </property>
        <property name="text">
@@ -275,6 +277,8 @@
        <property name="font">
         <font>
          <pointsize>12</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
         </font>
        </property>
        <property name="text">
@@ -358,6 +362,11 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QLabel" name="label_5">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
        <property name="text">
         <string>Debug Output:</string>
        </property>
@@ -379,7 +388,7 @@
           <x>0</x>
           <y>0</y>
           <width>487</width>
-          <height>149</height>
+          <height>147</height>
          </rect>
         </property>
        </widget>
@@ -401,11 +410,17 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <tabstops>
+  <tabstop>pushButton_SelectFile</tabstop>
   <tabstop>spinBox_MFS</tabstop>
   <tabstop>spinBox_MIS</tabstop>
   <tabstop>doubleSpinBox_MCF</tabstop>
-  <tabstop>pushButton_SelectFile</tabstop>
+  <tabstop>pushButton_showResult</tabstop>
+  <tabstop>pushButton_showRule</tabstop>
+  <tabstop>pushButton_showItemsets</tabstop>
   <tabstop>lineEdit_Filepath</tabstop>
+  <tabstop>runButton</tabstop>
+  <tabstop>exitButton</tabstop>
+  <tabstop>scrollArea</tabstop>
  </tabstops>
  <resources/>
  <connections/>

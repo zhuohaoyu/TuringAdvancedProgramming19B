@@ -63,6 +63,7 @@ void MainWindow::on_runButton_clicked()
 void MainWindow::run_clang()
 {
     out = new QTextEdit();
+    out->setReadOnly(true);
     ui->scrollArea->setWidget(out);
     ui->scrollArea->setWidgetResizable(true);
     proc = new QProcess(this);

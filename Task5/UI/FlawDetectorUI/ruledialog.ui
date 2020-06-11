@@ -33,7 +33,7 @@
        </font>
       </property>
       <property name="text">
-       <string>PARs</string>
+       <string>Positive Association Rules</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
@@ -60,7 +60,7 @@
        </font>
       </property>
       <property name="text">
-       <string>NARs</string>
+       <string>Negative Association Rule</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
