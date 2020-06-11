@@ -61,10 +61,10 @@ InstalledDir: /usr/bin
 
 单击"``Show ...``"，会打开一个新窗口，展示指定的数据。对于项集和规则，使用文本列表的形式展示，每行一个规则或项集，使用等宽字体展示每条规则。对于缺陷检测结果，以只读纯文本的形式展示，灵活性更好。
 
-![Screenshot from 2020-06-11 13-46-34](README.assets/Screenshot from 2020-06-11 13-46-34-1591858622161.png)
+<img src="README.assets/Screenshot from 2020-06-11 13-46-34-1591858622161.png" alt="Screenshot from 2020-06-11 13-46-34" style="zoom:80%;" />
 
 
 
 最后，展示一张效果图：
 
-![Screenshot from 2020-06-11 13-50-15](README.assets/Screenshot from 2020-06-11 13-50-15.png)
+<img src="README.assets/Screenshot from 2020-06-11 13-50-15.png" alt="Screenshot from 2020-06-11 13-50-15" style="zoom: 80%;" />
