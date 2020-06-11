@@ -16,14 +16,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    itemsetdialog.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    resultdialog.cpp \
+    ruledialog.cpp
 
 HEADERS += \
-    mainwindow.h
+    itemsetdialog.h \
+    mainwindow.h \
+    resultdialog.h \
+    ruledialog.h
 
 FORMS += \
-    mainwindow.ui
+    itemsetdialog.ui \
+    mainwindow.ui \
+    resultdialog.ui \
+    ruledialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

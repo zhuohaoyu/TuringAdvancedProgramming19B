@@ -38,35 +38,46 @@ public:
     MyPass(int mfs, int mis, double mcf) : ModulePass(ID), minFreqSupport(mfs), maxInfreqSupp(mis), minConf(mcf / 100.0) {}
     virtual bool runOnModule(Module &M) {
         vector<SDDG *> sddg_graphs;  // this is needed when build the SupportInfo class
-        outs() << "Module:" << (M.getName()) << '\n';
-        outs().flush();
+        errs() << "Module:" << (M.getName()) << '\n';
+        errs().flush();
+        errs() << "MFS = " << minFreqSupport << ", MIS = " << maxInfreqSupp << ", MCF = " << minConf << "\n\n";
+        errs().flush();
+        errs() << "Building Data Dependence Graph\n";
+        errs().flush();
         for (auto iter = M.begin(); iter != M.end(); iter++) {
             Function &F = *iter;
-            outs() << " + Function:" << (F.getName()) << '\n';
-            outs().flush();
+            // outs() << " + Function:" << (F.getName()) << '\n';
+            // outs().flush();
             if (F.empty()) {
-                outs() << "   - Empty Function\n";
-                outs().flush();
+                // outs() << "   - Empty Function\n";
+                // outs().flush();
                 continue;
             }
             miner::SDDG *sddg = new miner::SDDG(&F);
             sddg->buildSDDG();
             sddg->flattenSDDG();
-            sddg->dotify();
+            // sddg->dotify();
             sddg_graphs.push_back(sddg);
         }
-        outs() << '\n';
-        outs().flush();
+        // outs() << '\n';
+        // outs().flush();
         SupportInfo *spt = new SupportInfo(sddg_graphs, minFreqSupport);  // Instantiate SI class
         vector<string> sgfqc = spt->get_single_frequency();               // this func returns a vector<string>
                                                                           //        for( auto u : sgfqc ) {
                                                                           //            outs() << "sgfqc : " << u  << "\n";
                                                                           //        }
+        errs() << "Generating Frequent Itemsets\n";
+        errs().flush();
         AprioriAlgorithm solver(sgfqc, minFreqSupport, maxInfreqSupp, spt);
+
+        errs() << "Generating Rules\n";
+        errs().flush();
         GenRule generator(solver.getFreqItemSet(), solver.getInfreqItemSet(), minConf, spt);
-
+        errs() << "Detecting Flaws\n";
+        errs().flush();
         DetectRule(generator, spt);
-
+        errs() << "\nDone.\n", errs().flush();
+        outs() << "$$SUCCESS\n", outs().flush();
         delete spt;
         for (auto u : sddg_graphs) delete u;
         return false;

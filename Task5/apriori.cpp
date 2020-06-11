@@ -120,16 +120,24 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
 
     //Output Here
 
-    cout << "Frequent Itemsets:\n";
+    cout << "$FIS\n";
+    cout.flush();
     for(auto i: freqItemSet) {
-        cout << "\t";
+        int supp = supportInfoAddr -> calcu_support(&i);
         for(auto j: i) cout << "\"" << j << "\"" << ", "; 
+        cout << "Support = " << supp;
         cout << endl;
     }
-    cout << "Infrequent Itemsets:\n";
+    cout << "$$FIS\n";
+    cout.flush();
+    cout << "$IIS\n";
+    cout.flush();
     for(auto i: infreqItemSet) {
-        cout << "\t";
+        int supp = supportInfoAddr -> calcu_support(&i);
         for(auto j: i) cout << "\"" << j << "\"" << ", "; 
+        cout << "Support = " << supp;
         cout << endl;
     }
+    cout << "$$IIS\n";
+    cout.flush();
 }

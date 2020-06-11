@@ -43,37 +43,40 @@ GenRule::GenRule(vector<ItemSet> FIs, vector<ItemSet> IIs, double min_conf, SPT_
         if(1.0 >= get<0>(temp) && get<0>(temp) >= min_conf) NARs.push_back(temp);
     }
     std::sort(NARs.begin(), NARs.end(), cmp_Rule);
-    outs() << "PARs:\n";
-    outs().flush();
+    cout << "$PAR\n";
+    cout.flush();
     for(auto R: PARs) {
         //if(get<0>(R) == 1.0) continue;
         double conf = get<0>(R);
         auto A = get<2>(R);
         auto b = get<3>(R);
-        outs() << "\tRule: { ";
-        outs().flush();
-        for(auto a: A) outs() << a << " ",outs().flush();;
-        outs() << "} -> { " << b << " }\n"; 
-        outs().flush();
-        outs() << "\tconfidence rate = " << conf << "\n\n";
-        outs().flush();
+        cout << "{ ";
+        cout.flush();
+        for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
+        cout << "} -> { \"" << b << "\" }"; 
+        cout.flush();
+        cout << " Confidence = " << conf << "\n";
+        cout.flush();
     }
-
-    outs() << "NARs:\n";
-    outs().flush();
+    cout << "$$PAR\n";
+    cout.flush();
+    cout << "$NAR\n";
+    cout.flush();
     for(auto R: NARs) {
         //if(get<0>(R) == 1.0) continue;
         double conf = get<0>(R);
         auto A = get<2>(R);
         auto b = get<3>(R);
-        outs() << "\tRule: { ";
-        outs().flush();
-        for(auto a: A) outs() << a << " ", outs().flush();
-        outs() << "} -> { " << b << " }\n"; 
-        outs().flush();
-        outs() << "\tconfidence rate = " << conf << "\n\n";
-        outs().flush();
+        cout << "Rule: { ";
+        cout.flush();
+        for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
+        cout << "} -> { \"" << b << "\" }"; 
+        cout.flush();
+        cout << " Confidence = " << conf << "\n";
+        cout.flush();
     }
+    cout << "$$NAR\n";
+    cout.flush();
 }
 
 vector<Rule>& GenRule::getPARs() { return PARs; }
@@ -102,26 +105,26 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
     static unsigned int errorcount = 0;
     vector<Rule>& NARs = generator.getNARs();
     vector<Rule>& PARs = generator.getPARs();
+    cout << "$RES" << endl;
     for(auto R : PARs) {
         if(get<0>(R) >= 1 - 1e-6) continue;
         vector<string> A = get<2>(R);
         vector<string> B = get<1>(R);
-
         vector<vector<vector<Instruction*>>> vios = spt->get_PARs_violations(&A , &B);
         for(auto funcvec : vios) {
             for(auto res : funcvec) {
                 errorcount++;
-                outs() << "Error #" << errorcount << ": \n";
-                outs().flush();
+                cout << "Error #" << errorcount << ": \n";
+                cout.flush();
                 for(auto inst : res) {
                     DisplayInst(inst);
                 }
-                outs() << "except an instruction but MISSING: " << get<3>(R) << "\n";
-                outs().flush();
-                outs() << "\n";
-                outs().flush();
+                cout << "except an instruction but MISSING: " << get<3>(R) << "\n";
+                cout.flush();
+                cout << "\n";
+                cout.flush();
             }
-            //if(!funcvec.empty()) outs() << "\n";
+            //if(!funcvec.empty()) cout << "\n";
         } 
     }
     for(auto R : NARs) {
@@ -132,24 +135,25 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
         for(auto funcvec : vios) {
             for(auto res : funcvec) {
                 errorcount++;
-                outs() << "Error #" << errorcount << ": \n";
-                outs().flush();
+                cout << "Error #" << errorcount << ": \n";
+                cout.flush();
                 for(auto inst : res) {
                     if(normalizeInstruction(inst) == get<3>(R)) continue;
                     DisplayInst(inst);
                 }
-                outs() << "with the(se) following UNEXPECTED instruction(s): \n";
-                outs().flush();
+                cout << "with the(se) following UNEXPECTED instruction(s): \n";
+                cout.flush();
                 for(auto inst : res) {
                     if(normalizeInstruction(inst) != get<3>(R)) continue;
                     DisplayInst(inst);
                 }
-                outs() << "\n";
-                outs().flush();
+                cout << "\n";
+                cout.flush();
             }
-            //if(!funcvec.empty()) outs() << "\n";
+            //if(!funcvec.empty()) cout << "\n";
         } 
     }
+    cout << "$$RES" << endl;
 }
 
 void DisplayInst(Instruction* inst) {
