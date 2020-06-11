@@ -1,31 +1,22 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
-#include "QFileDialog"
-#include "qmessagebox.h"
 #include "itemsetdialog.h"
 #include "ruledialog.h"
 #include "resultdialog.h"
-#include <QString>
-#include <QStringList>
-#include <string>
-#include <iostream>
+
+#include "ui_mainwindow.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     filePath = "";
     ui->setupUi(this);
-    initSignalSlots();
+
     ui->lineEdit_Filepath->setText(filePath);
     ui->pushButton_showItemsets->setEnabled(false);
     ui->pushButton_showResult->setEnabled(false);
     ui->pushButton_showRule->setEnabled(false);
 }
-
-void MainWindow::initSignalSlots() {
-
-}
-
 
 MainWindow::~MainWindow()
 {
@@ -57,13 +48,6 @@ void MainWindow::on_exitButton_clicked()
 
 void MainWindow::on_runButton_clicked()
 {
-    run_clang();
-}
-
-
-void MainWindow::run_clang()
-{
-
     ui->pushButton_SelectFile->setEnabled(false);
     ui->spinBox_MFS->setEnabled(false);
     ui->spinBox_MIS->setEnabled(false);
@@ -72,6 +56,12 @@ void MainWindow::run_clang()
     ui->pushButton_showResult->setEnabled(false);
     ui->pushButton_showRule->setEnabled(false);
 
+    run_clang();
+}
+
+
+void MainWindow::run_clang()
+{
     out = new QTextEdit();
     ui->scrollArea->setWidget(out);
     ui->scrollArea->setWidgetResizable(true);
@@ -83,7 +73,7 @@ void MainWindow::run_clang()
     connect(proc, SIGNAL(readyReadStandardOutput()), this, SLOT(on_exec_clang_stdout()));
     connect(proc, SIGNAL(readyReadStandardError()), this, SLOT(on_exec_clang_stderr()));
     connect(proc, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(on_clang_over(int, QProcess::ExitStatus)));
-    QStringList args;// build the arguments for the executable
+    QStringList args;
     QString mis =QString::number(ui->spinBox_MIS->value()), mfs = QString::number(ui->spinBox_MFS->value()),
             mcf = QString::number(ui->doubleSpinBox_MCF->value());
     args << "-mllvm" << "-mfs=" + mfs << "-mllvm" << "-mis=" + mis <<"-mllvm" << "-min_conf=" + mcf;
@@ -106,7 +96,7 @@ void MainWindow::on_exec_clang_stderr()
     out->append(result);
 }
 
-// after the clang process is finished, this function is invoked.
+
 void MainWindow::on_clang_over(int p,QProcess::ExitStatus es)
 {
     ui->pushButton_SelectFile->setEnabled(true);

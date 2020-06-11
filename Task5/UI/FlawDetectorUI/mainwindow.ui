@@ -42,6 +42,11 @@
      </item>
      <item row="1" column="2">
       <widget class="QSpinBox" name="spinBox_MIS">
+       <property name="font">
+        <font>
+         <family>Ubuntu Mono</family>
+        </font>
+       </property>
        <property name="prefix">
         <string>MIS:  </string>
        </property>
@@ -55,6 +60,11 @@
      </item>
      <item row="1" column="4">
       <widget class="QDoubleSpinBox" name="doubleSpinBox_MCF">
+       <property name="font">
+        <font>
+         <family>Ubuntu Mono</family>
+        </font>
+       </property>
        <property name="prefix">
         <string>MCF:  </string>
        </property>
@@ -86,6 +96,11 @@
      </item>
      <item row="1" column="0">
       <widget class="QSpinBox" name="spinBox_MFS">
+       <property name="font">
+        <font>
+         <family>Ubuntu Mono</family>
+        </font>
+       </property>
        <property name="prefix">
         <string>MFS:  </string>
        </property>
@@ -170,6 +185,11 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineEdit_Filepath">
+       <property name="font">
+        <font>
+         <family>Ubuntu Mono</family>
+        </font>
+       </property>
        <property name="text">
         <string>None</string>
        </property>
@@ -345,6 +365,11 @@
      </item>
      <item>
       <widget class="QScrollArea" name="scrollArea">
+       <property name="font">
+        <font>
+         <family>Ubuntu Mono</family>
+        </font>
+       </property>
        <property name="widgetResizable">
         <bool>true</bool>
        </property>

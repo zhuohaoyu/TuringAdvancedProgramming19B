@@ -19,7 +19,6 @@ ItemsetDialog::ItemsetDialog(QWidget *parent, QStringList l1, QStringList l2) :
     IISlistModel->setStringList(IIS);
     ui->listView->setModel(FISlistModel);
     ui->listView_2->setModel(IISlistModel);
-//    ui->listView->resiz
 }
 
 ItemsetDialog::~ItemsetDialog()

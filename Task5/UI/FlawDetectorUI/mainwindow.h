@@ -2,10 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QString>
 #include <QProcess>
 #include <QTextEdit>
+#include <QString>
 #include <QStringList>
+#include <QFileDialog>
+#include <QMessageBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,22 +21,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void run_clang();
-    void initSignalSlots();
+
 private slots:
     void on_exec_clang_stdout();
     void on_exec_clang_stderr();
     void on_clang_over(int,QProcess::ExitStatus);
-
     void on_pushButton_SelectFile_clicked();
-
     void on_exitButton_clicked();
-
     void on_runButton_clicked();
-
     void on_pushButton_showResult_clicked();
-
     void on_pushButton_showRule_clicked();
-
     void on_pushButton_showItemsets_clicked();
 
 private:

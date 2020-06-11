@@ -2,6 +2,7 @@
 #include "apriori.h"
 #include "calcu.h"
 #include <iostream>
+#include <iomanip>
 
 using namespace llvm;
 using namespace std;
@@ -55,7 +56,7 @@ GenRule::GenRule(vector<ItemSet> FIs, vector<ItemSet> IIs, double min_conf, SPT_
         for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
         cout << "} -> { \"" << b << "\" }"; 
         cout.flush();
-        cout << " Confidence = " << conf << "\n";
+        cout << " Confidence = " << fixed << setprecision(1) << conf * 100 << "%\n";
         cout.flush();
     }
     cout << "$$PAR\n";
@@ -72,7 +73,7 @@ GenRule::GenRule(vector<ItemSet> FIs, vector<ItemSet> IIs, double min_conf, SPT_
         for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
         cout << "} -> { \"" << b << "\" }"; 
         cout.flush();
-        cout << " Confidence = " << conf << "\n";
+        cout << " Confidence = " << fixed << setprecision(1) << conf * 100 << "%\n";
         cout.flush();
     }
     cout << "$$NAR\n";
@@ -158,6 +159,6 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
 
 void DisplayInst(Instruction* inst) {
     Info i = retrieveDebugInfo(inst);
-    outs() << *inst << ", " << get<2>(i) << ":" << get<0>(i) << "\n";
+    outs() << " \"" << *inst << "  \"" << ", " << get<2>(i) << ":" << get<0>(i) << "\n";
     outs().flush();
 }
