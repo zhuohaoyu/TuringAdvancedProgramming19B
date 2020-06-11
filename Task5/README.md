@@ -29,6 +29,10 @@ clang version 10.0.0
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
+$ qmake --version
+QMake version 3.1
+Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
+
 ```
 
 
