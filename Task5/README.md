@@ -12,7 +12,7 @@
 + 于倬浩 2019201409：
     + 构建``Transaction``图 & 规范化指令（Task2）
     + 实现``Apriori``算法生成项集（Task3）
-    + 图形化界面的实现 & 与动态链接库的输出对接（Task5）
+    + 图形化界面 & 对接动态链接库的输出（Task5）
 
 + 汪元森 2019201420：
     + 初始化数据流算法（Task2）
@@ -54,9 +54,9 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 ### 运行检测
 
-选定源文件，指定参数后，单击"``Run``"即可运行检测。运行过程中，所有设定参数的按钮均被禁用，运行结束后重新启用这些按钮。运行过程中，动态链接库MyPass.so输出适当的调试信息至标准错误流stderr中，并即时反馈至"Debug Output"中。运行过程中，所有按钮被禁用，防止用户操作失误。
+选定源文件，指定参数后，单击"``Run``"即可运行检测。运行过程中，所有设定参数的按钮均被禁用，运行结束后重新启用这些按钮。运行过程中，动态链接库``MyPass.so``输出适当的调试信息至标准错误流stderr中，并即时反馈至"Debug Output"中。运行过程中，所有按钮被禁用，防止用户操作失误。
 
-运行过程中的结果，由MyPass.so输出至stdout中，使用不同的token区分输出类型。``MyPass.so``在成功执行结束后，在``stdout``中返回一个token``"$$SUCCESS"``，UI在读取到这个token后，才会启用右侧的三个按钮。。同时在文件路径更新后，亦会禁用展示结果的按钮。
+运行过程中的结果，由``MyPass.so``输出至``stdout``中，使用不同的token区分输出类型。``MyPass.so``在成功执行结束后，在``stdout``中返回一个token``"$$SUCCESS"``，UI在读取到这个token后，才会启用右侧的三个按钮。。同时在文件路径更新后，亦会禁用展示结果的按钮。
 
 <img src="README.assets/4.png" alt="4" style="zoom:80%;" />
 
@@ -64,16 +64,16 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 ### 查看结果
 
-成功运行检测后，右侧的三个按钮"Show Result","Show Rules", "Show Itemsets"可被启用。
+成功运行检测后，右侧的三个按钮"``Show Result``","``Show Rules``", "``Show Itemsets``"可被启用。
 
-单击"Show Results"，弹出一个包含QTreeView组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。
+单击``Show Results``，弹出一个包含``QTreeView``组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。
 
 <img src="README.assets/result.png" alt="result" style="zoom:80%;" />
 
-单击"Show Rules"，弹出一个包含两个QTreeView组件的新窗口，分别展示了所有的正关联规则和负关联规则以及对应置信度。
+单击``Show Rules``，弹出一个包含两个``QTreeView``组件的新窗口，分别展示了所有的正关联规则和负关联规则以及对应置信度。
 
 <img src="README.assets/rule.png" alt="rule" style="zoom:80%;" />
 
-单击"Show Itemsets"，弹出一个包含两个QTreeView组件的新窗口，展示了所有的频繁/非频繁项集，以及对应的支持度。
+单击``Show Itemsets``，弹出一个包含两个``QTreeView``组件的新窗口，展示了所有的频繁/非频繁项集以及对应的支持度。
 
 <img src="README.assets/itemset.png" alt="itemset" style="zoom:80%;" />
