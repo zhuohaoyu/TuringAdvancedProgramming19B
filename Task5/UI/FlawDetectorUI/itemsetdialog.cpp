@@ -1,6 +1,6 @@
 #include "itemsetdialog.h"
 #include "ui_itemsetdialog.h"
-#include <iostream>
+
 ItemsetDialog::ItemsetDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ItemsetDialog)

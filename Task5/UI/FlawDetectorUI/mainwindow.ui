@@ -496,6 +496,9 @@
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -505,17 +508,22 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+  </widget>
  </widget>
  <tabstops>
+  <tabstop>lineEdit_Filepath</tabstop>
   <tabstop>pushButton_SelectFile</tabstop>
   <tabstop>spinBox_MFS</tabstop>
   <tabstop>spinBox_MIS</tabstop>
   <tabstop>doubleSpinBox_MCF</tabstop>
+  <tabstop>scrollArea</tabstop>
   <tabstop>pushButton_showResult</tabstop>
   <tabstop>pushButton_showRule</tabstop>
   <tabstop>pushButton_showItemsets</tabstop>
-  <tabstop>lineEdit_Filepath</tabstop>
   <tabstop>runButton</tabstop>
   <tabstop>exitButton</tabstop>
  </tabstops>
