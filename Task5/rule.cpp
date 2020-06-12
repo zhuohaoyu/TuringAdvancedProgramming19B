@@ -51,12 +51,12 @@ GenRule::GenRule(vector<ItemSet> FIs, vector<ItemSet> IIs, double min_conf, SPT_
         double conf = get<0>(R);
         auto A = get<2>(R);
         auto b = get<3>(R);
-        cout << "{ ";
-        cout.flush();
-        for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
-        cout << "} -> { \"" << b << "\" }"; 
-        cout.flush();
-        cout << " Confidence = " << fixed << setprecision(1) << conf * 100 << "%\n";
+        for(int aa = 0; aa < A.size(); ++aa) {
+            auto a = A[aa];
+            if(aa < A.size() - 1) cout << a << "#", cout.flush();
+            else cout << a, cout.flush();
+        }
+        cout << "^" << b << "|" << fixed << setprecision(1) << conf * 100 << "%\n";
         cout.flush();
     }
     cout << "$$PAR\n";
@@ -68,12 +68,12 @@ GenRule::GenRule(vector<ItemSet> FIs, vector<ItemSet> IIs, double min_conf, SPT_
         double conf = get<0>(R);
         auto A = get<2>(R);
         auto b = get<3>(R);
-        cout << "Rule: { ";
-        cout.flush();
-        for(auto a: A) cout << "\"" << a << "\" ", cout.flush();
-        cout << "} -> { \"" << b << "\" }"; 
-        cout.flush();
-        cout << " Confidence = " << fixed << setprecision(1) << conf * 100 << "%\n";
+        for(int aa = 0; aa < A.size(); ++aa) {
+            auto a = A[aa];
+            if(aa < A.size() - 1) cout << a << "#", cout.flush();
+            else cout << a, cout.flush();
+        }
+        cout << "^" << b << "|" << fixed << setprecision(1) << conf * 100 << "%\n";
         cout.flush();
     }
     cout << "$$NAR\n";
@@ -85,7 +85,7 @@ vector<Rule>& GenRule::getPARs() { return PARs; }
 vector<Rule>& GenRule::getNARs() { return NARs; }
 
 Info &retrieveDebugInfo(Instruction* inst) {
-    DebugInfoTuple = {0, "*Linker Error*", "*Linker Error*", 0}; //Failure display shows linker error
+    DebugInfoTuple = {0, "[Unknown]", "[Unknown]", 0}; //Failure display shows linker error
     const DebugLoc &debugLoc = inst -> getDebugLoc();
     if(debugLoc) {
         unsigned int instLine = debugLoc.getLine();
@@ -115,14 +115,14 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
         for(auto funcvec : vios) {
             for(auto res : funcvec) {
                 errorcount++;
-                cout << "Error #" << errorcount << ": \n";
-                cout.flush();
+                // cout << "Error #" << errorcount << ": \n";
+                // cout.flush();
+                double conf = get<0>(R);
+                cout << "$X" << fixed << setprecision(1) << conf * 100 << "|", cout.flush();
                 for(auto inst : res) {
                     DisplayInst(inst);
                 }
-                cout << "except an instruction but MISSING: " << get<3>(R) << "\n";
-                cout.flush();
-                cout << "\n";
+                cout << get<3>(R) << "\n";
                 cout.flush();
             }
             //if(!funcvec.empty()) cout << "\n";
@@ -135,21 +135,36 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
         vector<vector<vector<Instruction*>>> vios = spt->get_NARs_violations(&B);
         for(auto funcvec : vios) {
             for(auto res : funcvec) {
-                errorcount++;
-                cout << "Error #" << errorcount << ": \n";
-                cout.flush();
-                for(auto inst : res) {
-                    if(normalizeInstruction(inst) == get<3>(R)) continue;
-                    DisplayInst(inst);
+                
+                if(get<2>(R).size() == 1 && get<2>(R)[0] == get<3>(R)) {
+                    errorcount++;
+                    // cout << "Error #" << errorcount << ": \n";
+                    double conf = get<0>(R);
+                    cout << "$Y" << fixed << setprecision(1) << conf * 100 << "|", cout.flush();
+                    char sep = '#';
+                    for(auto inst : res) {
+                        DisplayInst(inst, sep);
+                        if(inst == res[0]) sep = '$';
+                    }
+                    cout << "\n";
+                    cout.flush();
                 }
-                cout << "with the(se) following UNEXPECTED instruction(s): \n";
-                cout.flush();
-                for(auto inst : res) {
-                    if(normalizeInstruction(inst) != get<3>(R)) continue;
-                    DisplayInst(inst);
+                else {
+                    errorcount++;
+                    // cout << "Error #" << errorcount << ": \n";
+                    double conf = get<0>(R);
+                    cout << "$Y" << fixed << setprecision(1) << conf * 100 << "|", cout.flush();
+                    for(auto inst : res) {
+                        if(normalizeInstruction(inst) == get<3>(R)) continue;
+                        DisplayInst(inst);
+                    }
+                    for(auto inst : res) {
+                        if(normalizeInstruction(inst) != get<3>(R)) continue;
+                        DisplayInst(inst, '$');
+                    }
+                    cout << "\n";
+                    cout.flush();
                 }
-                cout << "\n";
-                cout.flush();
             }
             //if(!funcvec.empty()) cout << "\n";
         } 
@@ -157,8 +172,8 @@ void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt) {
     cout << "$$RES" << endl;
 }
 
-void DisplayInst(Instruction* inst) {
+void DisplayInst(Instruction* inst, char sep) {
     Info i = retrieveDebugInfo(inst);
-    outs() << " \"" << *inst << "  \"" << ", " << get<2>(i) << ":" << get<0>(i) << "\n";
+    outs() << *inst << "&" << get<0>(i) << sep;
     outs().flush();
 }

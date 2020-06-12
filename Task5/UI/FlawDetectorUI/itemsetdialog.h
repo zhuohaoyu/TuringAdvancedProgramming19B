@@ -5,6 +5,11 @@
 #include <QString>
 #include <QStringList>
 #include <QStringListModel>
+#include <QTreeView>
+#include <QStandardItemModel>
+#include <QList>
+#include <QStandardItem>
+#include <QAbstractItemView>
 
 namespace Ui {
 class ItemsetDialog;
@@ -22,7 +27,9 @@ public:
 private:
     Ui::ItemsetDialog *ui;
     QStringList FIS, IIS;
-    QStringListModel *FISlistModel, *IISlistModel;
+    QStandardItemModel *modelFIS, *modelIIS;
+//    QStringListModel *FISlistModel, *IISlistModel;
+
 };
 
 #endif // ITEMSETDIALOG_H

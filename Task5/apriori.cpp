@@ -124,8 +124,12 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
     cout.flush();
     for(auto i: freqItemSet) {
         int supp = supportInfoAddr -> calcu_support(&i);
-        for(auto j: i) cout << "\"" << j << "\"" << ", "; 
-        cout << "Support = " << supp;
+        // for(auto j: i) 
+        for(int k = 0; k < i.size(); ++k) {
+            if(k < i.size() - 1) cout << i[k] << "#";
+            else cout << i[k];
+        }
+        cout << "|" << supp;
         cout << endl;
     }
     cout << "$$FIS\n";
@@ -134,8 +138,12 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
     cout.flush();
     for(auto i: infreqItemSet) {
         int supp = supportInfoAddr -> calcu_support(&i);
-        for(auto j: i) cout << "\"" << j << "\"" << ", "; 
-        cout << "Support = " << supp;
+        // for(auto j: i) 
+        for(int k = 0; k < i.size(); ++k) {
+            if(k < i.size() - 1) cout << i[k] << "#";
+            else cout << i[k];
+        }
+        cout << "|" << supp;
         cout << endl;
     }
     cout << "$$IIS\n";

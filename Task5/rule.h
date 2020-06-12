@@ -40,4 +40,4 @@ Info &retrieveDebugInfo(Instruction* inst);
 
 void DetectRule(GenRule &generator, SPT_calc::SupportInfo *spt);
 
-void DisplayInst(Instruction* inst);
+void DisplayInst(Instruction* inst, char sep = '#');

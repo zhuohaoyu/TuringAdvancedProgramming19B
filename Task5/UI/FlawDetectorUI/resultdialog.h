@@ -6,6 +6,11 @@
 #include <QStringList>
 #include <QStringListModel>
 #include <QTextEdit>
+#include <QTreeView>
+#include <QStandardItemModel>
+#include <QList>
+#include <QStandardItem>
+#include <QAbstractItemView>
 
 namespace Ui {
 class ResultDialog;
@@ -23,7 +28,7 @@ public:
 private:
     Ui::ResultDialog *ui;
     QStringList result;
-    QTextEdit *out;
+    QStandardItemModel *modelRES;
 };
 
 #endif // RESULTDIALOG_H
