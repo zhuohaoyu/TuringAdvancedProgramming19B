@@ -38,28 +38,42 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 本次UI的实现采用了QT5，实现了一个简单的多窗口程序，主窗口初始状况下如下图所示：
 
-<img src="README.assets/Screenshot from 2020-06-11 13-35-19.png" alt="Screenshot from 2020-06-11 13-35-19" style="zoom: 90%;" />
+<img src="README.assets/1.png" alt="1" style="zoom:80%;" />
+
+### 指定运行参数
 
 支持指定需要检测的源文件位置，指定``MFS``、``MIS``、``MCF``的值。
 
+选择文件的``PushButton``通过调用``QFileDialog``，调用系统选择文件的窗口，较为美观，同时限定用户只能选择C/C++源代码文件。文件选择结束后，调用``QMessageBox``给出反馈，同时将文件目录更新至主窗口的`lineEdit`中。
+
 对于三个指定值的输入，选用了``spinbox``，以便控制输入值的上下界、步长等。
 
-选择文件的``PushButton``通过调用``QFileDialog``，调用系统选择文件的窗口，较为美观，且限定用户只能选择C/C++源代码文件。文件选择结束后，调用``QMessageBox``给出反馈，同时将文件目录更新至主窗口的`lineEdit`中。
-
-<img src="README.assets/Screenshot from 2020-06-11 13-36-13.png" alt="Screenshot from 2020-06-11 13-36-13" style="zoom: 75%;" />         <img src="README.assets/Screenshot from 2020-06-11 13-36-37.png" alt="Screenshot from 2020-06-11 13-36-37" style="zoom: 80%;" />
+<img src="README.assets/2.png" alt="2" style="zoom:60%;" /><img src="README.assets/3.png" alt="3" style="zoom:60%;" />
 
 
 
-选定源文件，指定参数后，单击"``Run``"即可运行监测。运行过程中，所有设定参数的按钮均被禁用，运行结束后重新启用这些按钮。
+### 运行检测
 
-<img src="README.assets/Screenshot from 2020-06-11 13-37-30.png" alt="Screenshot from 2020-06-11 13-37-30" style="zoom: 70%;" />
+选定源文件，指定参数后，单击"``Run``"即可运行检测。运行过程中，所有设定参数的按钮均被禁用，运行结束后重新启用这些按钮。运行过程中，动态链接库MyPass.so输出适当的调试信息至标准错误流stderr中，并即时反馈至"Debug Output"中。运行过程中，所有按钮被禁用，防止用户操作失误。
+
+运行过程中的结果，由MyPass.so输出至stdout中，使用不同的token区分输出类型。``MyPass.so``在成功执行结束后，在``stdout``中返回一个token``"$$SUCCESS"``，UI在读取到这个token后，才会启用右侧的三个按钮。。同时在文件路径更新后，亦会禁用展示结果的按钮。
+
+<img src="README.assets/4.png" alt="4" style="zoom:80%;" />
 
 
 
-动态链接库``MyPass.so``会将调试信息输出到``stderr``中，并实时更新至"``Debug Output``"中。对于结果和项集的传递，``MyPass.so``将这些信息输出至``stdout``，使用不同的token区分输出类型，``MyPass``在成功执行结束后，在``stdout``中返回一个token``"$$SUCCESS"``，UI在读取到这个token后，才会启用右侧的三个按钮。可以保证在编译错误/运行错误/``MyPass``运行结束前，阻止用户点击右侧的按钮。同时在文件更新后，亦会禁用展示结果的按钮。
+### 查看结果
 
-在实现上，我使用了两个不同的槽函数，对接动态链接库的两个输出流，需要注意的是，由于输出流自带缓冲区，在每一次输出后必须清空缓冲区，否则会导致部分字符串丢失。
+成功运行检测后，右侧的三个按钮"Show Result","Show Rules", "Show Itemsets"可被启用。
 
-单击"``Show ...``"，会打开一个新窗口，展示项集数据/生成的规则/缺陷检测的结果。对于项集和规则，使用字符串列表的形式展示，每行一个规则或项集，使用等宽字体展示每条规则。对于缺陷检测结果，以只读纯文本的形式展示，灵活性更好。在实现上，我在`MyPass.so`的标准输出中，加入了不同的token，表示不同类型的数据，槽函数读取时，便可较为容易的将输出的纯文本数据分类处理。下面同时展示了三个数据窗口的内容：
+单击"Show Results"，弹出一个包含QTreeView组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。
 
-<img src="README.assets/Screenshot from 2020-06-11 13-46-34-1591858622161.png" alt="Screenshot from 2020-06-11 13-46-34" style="zoom: 95%;" />
+<img src="README.assets/result.png" alt="result" style="zoom:80%;" />
+
+单击"Show Rules"，弹出一个包含两个QTreeView组件的新窗口，分别展示了所有的正关联规则和负关联规则以及对应置信度。
+
+<img src="README.assets/rule.png" alt="rule" style="zoom:80%;" />
+
+单击"Show Itemsets"，弹出一个包含两个QTreeView组件的新窗口，展示了所有的频繁/非频繁项集，以及对应的支持度。
+
+<img src="README.assets/itemset.png" alt="itemset" style="zoom:80%;" />
