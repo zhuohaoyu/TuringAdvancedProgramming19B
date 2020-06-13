@@ -1,6 +1,6 @@
 # 高级程序设计II 大作业实验报告
 
-项目地址：[GitHub](https://github.com/zhuohaoyu/TuringAdvancedProgramming19B)
+项目地址：[GitHub](https://github.com/zhuohaoyu/TuringAdvancedProgramming19B)（目前暂时设为private）
 
 ## 代码贡献
 
@@ -50,8 +50,6 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 <img src="README.assets/2.png" alt="2" style="zoom:60%;" /><img src="README.assets/3.png" alt="3" style="zoom:60%;" />
 
-
-
 ### 运行检测
 
 选定源文件，指定参数后，单击"``Run``"即可运行检测。运行过程中，所有设定参数的按钮均被禁用，运行结束后重新启用这些按钮。运行过程中，动态链接库``MyPass.so``输出适当的调试信息至标准错误流``stderr``中，并即时反馈至"Debug Output"中。
@@ -60,13 +58,11 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 <img src="README.assets/4.png" alt="4" style="zoom:80%;" />
 
-
-
 ### 查看结果
 
 成功运行检测后，右侧的三个按钮"``Show Result``","``Show Rules``", "``Show Itemsets``"可被启用。
 
-单击``Show Results``，弹出一个包含``QTreeView``组件和一个``QTextView``组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。用户在Tree View中单击某条行号后，会在上方的源文件中将光标自动定位到指定行，加粗并标红对应代码。选择另一条行号后，上一次高亮的一行将恢复初始状态。
+单击``Show Results``，弹出一个包含``QTreeView``组件和一个``QTextView``组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。用户在Tree View中单击某条行号后，会在上方的源文件中将光标自动定位到指定行，标红对应代码。选择另一条行号后，上一次高亮的一行将恢复初始状态。
 
 <img src="README.assets/interactive.png" alt="interactive" style="zoom:80%;" />
 
