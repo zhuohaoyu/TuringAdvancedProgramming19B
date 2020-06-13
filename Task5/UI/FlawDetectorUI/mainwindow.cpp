@@ -64,6 +64,7 @@ void MainWindow::run_clang()
 {
     out = new QTextEdit();
     out->setReadOnly(true);
+//    out->document()->block
     ui->scrollArea->setWidget(out);
     ui->scrollArea->setWidgetResizable(true);
     proc = new QProcess(this);
@@ -151,7 +152,7 @@ void MainWindow::on_clang_over(int p,QProcess::ExitStatus es)
 
 void MainWindow::on_pushButton_showResult_clicked()
 {
-    ResultDialog *dlg = new ResultDialog(nullptr, resList[4]);
+    ResultDialog *dlg = new ResultDialog(nullptr, resList[4], filePath);
     dlg->setWindowTitle("Show Results");
     dlg->show();
 }
