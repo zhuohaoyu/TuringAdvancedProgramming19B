@@ -66,9 +66,9 @@ Using Qt version 5.12.8 in /usr/lib/x86_64-linux-gnu
 
 成功运行检测后，右侧的三个按钮"``Show Result``","``Show Rules``", "``Show Itemsets``"可被启用。
 
-单击``Show Results``，弹出一个包含``QTreeView``组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。
+单击``Show Results``，弹出一个包含``QTreeView``组件和一个``QTextView``组件的新窗口，展示了匹配到的可能缺陷，对应的置信度，以及缺陷指令及对应源文件的行号。用户在Tree View中单击某条行号后，会在上方的源文件中将光标自动定位到指定行，加粗并标红对应代码。选择另一条行号后，上一次高亮的一行将恢复初始状态。
 
-<img src="README.assets/result.png" alt="result" style="zoom:80%;" />
+<img src="README.assets/interactive.png" alt="interactive" style="zoom:80%;" />
 
 单击``Show Rules``，弹出一个包含两个``QTreeView``组件的新窗口，分别展示了所有的正关联规则和负关联规则以及对应置信度。
 
