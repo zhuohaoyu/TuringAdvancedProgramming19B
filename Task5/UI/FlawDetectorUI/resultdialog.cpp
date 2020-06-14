@@ -17,7 +17,7 @@ void ResultDialog::on_current_column_changed(const QModelIndex& current, const Q
         if(!i.isDigit()) return;
     }
 //    qDebug() << curLine.toInt();
-    code->setFocus();
+//    code->setFocus();
     QTextCursor tc = code->textCursor();
     if(previousSelectedLine != -1) {
         int position = code->document()->findBlockByNumber ( previousSelectedLine - 1 ).position();
@@ -57,7 +57,7 @@ ResultDialog::ResultDialog(QWidget *parent, QStringList ls, QString filePath) :
     if(!fi.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
     code = new QTextEdit;
-//    code->setReadOnly(true);
+    code->setReadOnly(true);
     ui->scrollArea->setWidget(code);
     int curlinenum = 0;
     while(!fi.atEnd()) {
