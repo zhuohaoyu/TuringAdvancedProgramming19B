@@ -67,7 +67,7 @@ vector<ItemSet> AprioriAlgorithm::expandItemset(vector<ItemSet> s, int K) {
                     }
                 }
                 bool repeatElement = false;
-                for(int k = 1; k < K; ++k) {
+                for(int k = 1; k < K + 1; ++k) {
                     if(uni[k] == uni[k - 1]) {
                         repeatElement = true;
                         break;
