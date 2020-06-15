@@ -299,19 +299,55 @@ vector< vector<Instruction*> > FuncInfo::get_Func_NARs_violations( vector<string
 
 vector< vector< vector<Instruction*> > > SupportInfo::get_PARs_violations( vector<string>* sA , vector<string>* sB ){
     static vector< vector< vector<Instruction*> > > rt ;
+    static set   < vector<Instruction*> > temp ;
     rt.clear() ;
     for( int i = 0 ; i < sdgs_siz ; i ++ ){
         rt.push_back( sdgs[i]->get_Func_PARs_violations( sA , sB ) ) ;
     }
+    
+    
+//	errs() << "rule begin----------------------  \n\n" ;
+    for( auto &u : rt ){
+    	temp.clear() ;
+	//	errs() << " single func---------\n" ; 
+    	for( auto v : u ){
+    		sort( v.begin() , v.end() ) ;
+			temp.insert( v ) ;
+		} while( !u.empty() ) u.pop_back() ;
+	//	errs() << "---------set\n" ;
+		for( auto v : temp ){
+		/*	errs() << " begin\n" ;
+			for( auto k : v ){
+				errs() << *k <<"\n" ;
+			}
+			errs() << " end\n" ;
+		*/
+			u.push_back( v ) ;
+		}
+	}
     return rt ;
 }
 
 vector< vector< vector<Instruction*> > > SupportInfo::get_NARs_violations( vector<string>* sB ){
     static vector< vector< vector<Instruction*> > > rt ;
+    static set   < vector<Instruction*> > temp ;
     rt.clear() ;
     for( int i = 0 ; i < sdgs_siz ; i ++ ){
         rt.push_back( sdgs[i]->get_Func_NARs_violations( sB ) ) ;
     }
+    
+    
+//	errs() << "rule begin----------------------  \n\n" ;
+    for( auto &u : rt ){
+    	temp.clear() ;
+    	for( auto v : u ){
+    		sort( v.begin() , v.end() ) ;
+			temp.insert( v ) ;
+		} while( !u.empty() ) u.pop_back() ;
+		for( auto v : temp ){
+			u.push_back( v ) ;
+		}
+	}
     return rt ;
 }
 
