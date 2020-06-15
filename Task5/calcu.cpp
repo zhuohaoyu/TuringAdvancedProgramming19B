@@ -311,7 +311,7 @@ vector< vector< vector<Instruction*> > > SupportInfo::get_PARs_violations( vecto
     	temp.clear() ;
 	//	errs() << " single func---------\n" ; 
     	for( auto v : u ){
-    		sort( v.begin() , v.end() ) ;
+    		std::sort( v.begin() , v.end() ) ;
 			temp.insert( v ) ;
 		} while( !u.empty() ) u.pop_back() ;
 	//	errs() << "---------set\n" ;
@@ -341,7 +341,7 @@ vector< vector< vector<Instruction*> > > SupportInfo::get_NARs_violations( vecto
     for( auto &u : rt ){
     	temp.clear() ;
     	for( auto v : u ){
-    		sort( v.begin() , v.end() ) ;
+    		std::sort( v.begin() , v.end() ) ;
 			temp.insert( v ) ;
 		} while( !u.empty() ) u.pop_back() ;
 		for( auto v : temp ){
