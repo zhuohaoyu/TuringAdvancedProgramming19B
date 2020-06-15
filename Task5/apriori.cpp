@@ -103,7 +103,7 @@ AprioriAlgorithm::AprioriAlgorithm(ItemSet singleFreqItemSet, int minFreqSupp, i
         for(auto itemset : S) {
             int supp = supportInfoAddr -> calcu_support(&itemset);
             if(supp >= minFreqSupp) L[k].push_back(itemset);
-            else if(supp > 0 && supp < maxInfreqSupp) N[k].push_back(itemset);
+            else if(supp > 0 && supp <= maxInfreqSupp) N[k].push_back(itemset);
         }
         if(!L[k].empty()) {
             for(auto its: L[k]) {
