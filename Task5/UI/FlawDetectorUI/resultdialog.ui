@@ -19,9 +19,15 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="6,4">
    <item row="0" column="0">
     <widget class="QScrollArea" name="scrollArea">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="font">
       <font>
        <family>Ubuntu Mono</family>
@@ -38,7 +44,7 @@
         <x>0</x>
         <y>0</y>
         <width>902</width>
-        <height>449</height>
+        <height>389</height>
        </rect>
       </property>
      </widget>
@@ -46,10 +52,16 @@
    </item>
    <item row="1" column="0">
     <widget class="QTreeView" name="treeView">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>200</height>
+       <height>16777215</height>
       </size>
      </property>
      <property name="font">
